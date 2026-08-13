@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <title>ASG Arcade</title>
 <style>
-  html,body{margin:0;padding:0;overflow:hidden;background:#05070d;font-family:'Segoe UI',Arial,sans-serif;}
+  html,body{margin:0;padding:0;overflow:hidden;background:#040a18;font-family:'Segoe UI',Arial,sans-serif;}
   canvas{display:block;}
   #faceCam{position:fixed; left:0; bottom:0; width:2px; height:2px; opacity:.01; pointer-events:none; z-index:-1;}
   .hidden{display:none !important;}
@@ -12,8 +12,8 @@
   /* ---------- shared HUD chrome ---------- */
   #backBtn{
     position:fixed; top:16px; left:16px; z-index:20;
-    padding:9px 16px; border-radius:20px; border:1px solid rgba(255,255,255,.2);
-    background:rgba(0,0,0,.45); color:#fff; font-size:13px; letter-spacing:.5px;
+    padding:9px 16px; border-radius:8px; border:1px solid rgba(120,170,255,.28);
+    background:rgba(6,14,32,.6); color:#fff; font-size:13px; letter-spacing:.5px;
     cursor:pointer; backdrop-filter:blur(4px);
   }
   #backBtn:hover{ background:rgba(0,0,0,.65); }
@@ -25,7 +25,7 @@
     font-size:16px; letter-spacing:.5px;
   }
   #cartsHud .stat, #racingHud .stat, #faceHud .stat, #swordHud .stat{background:rgba(0,0,0,.35); padding:8px 14px; border-radius:10px; border:1px solid rgba(255,255,255,.15);}
-  #cartsHud .stat b, #racingHud .stat b, #faceHud .stat b, #swordHud .stat b{color:#ffd23f;}
+  #cartsHud .stat b, #racingHud .stat b, #faceHud .stat b, #swordHud .stat b{color:#8fc4ff;}
 
   /* ---------- race progress bar ---------- */
   #raceTrack{
@@ -38,7 +38,7 @@
     box-shadow:0 0 10px currentColor;
   }
   #raceTrack .pip.you{ background:#4ea8ff; color:#4ea8ff; }
-  #raceTrack .pip.rival{ background:#ff5f6d; color:#ff5f6d; }
+  #raceTrack .pip.rival{ background:#7f93b5; color:#7f93b5; }
   #raceTrack .flag{ position:absolute; right:-2px; top:-9px; font-size:14px; }
 
   /* ---------- sword duel health bars ---------- */
@@ -50,9 +50,9 @@
   #swordBars .bar{ flex:1; height:14px; border-radius:8px; background:rgba(0,0,0,.5);
     border:1px solid rgba(255,255,255,.18); overflow:hidden; }
   #swordBars .bar span{ display:block; height:100%; width:100%; transition:width .12s linear; }
-  #swordBars .you span{ background:linear-gradient(90deg,#2de0ff,#4ea8ff); }
-  #swordBars .foe span{ background:linear-gradient(90deg,#ff5f6d,#ff9a3f); }
-  #swordPower{ color:#ffd23f; font-size:13px; letter-spacing:1px; min-width:74px; text-align:center;
+  #swordBars .you span{ background:linear-gradient(90deg,#4da3ff,#1b5fd9); }
+  #swordBars .foe span{ background:linear-gradient(90deg,#7f93b5,#3d4d66); }
+  #swordPower{ color:#8fc4ff; font-size:13px; letter-spacing:1px; min-width:74px; text-align:center;
     text-shadow:0 2px 6px rgba(0,0,0,.8); }
 
 
@@ -68,29 +68,29 @@
   #scoreboard .side{font-size:14px; letter-spacing:2px; color:#9fb3d9; text-transform:uppercase;}
   #scoreboard .num{font-size:38px; font-weight:800; font-family:'Courier New',monospace;}
   #scoreboard .you .num{color:#4ea8ff;}
-  #scoreboard .cpu .num{color:#ff5f6d;}
+  #scoreboard .cpu .num{color:#7f93b5;}
   #scoreboard .vs{color:#5a6480; font-size:13px;}
 
   /* ---------- overlays ---------- */
   #overlay{
     position:fixed; inset:0; z-index:30; display:flex; flex-direction:column; align-items:center; justify-content:center;
-    background:radial-gradient(circle at center, rgba(10,14,26,.88), rgba(2,3,8,.97));
+    background:linear-gradient(180deg, rgba(6,16,38,.94), rgba(2,7,20,.98));
     color:#fff; text-align:center; gap:18px;
   }
   #overlay h1{
     font-size:50px; margin:0; letter-spacing:2px;
-    background:linear-gradient(90deg,#4ea8ff,#1a4fd6);
+    background:linear-gradient(90deg,#8fc4ff,#2f7de1,#0a2a5e);
     -webkit-background-clip:text; background-clip:text; color:transparent;
   }
   #overlay p{max-width:480px; color:#c9d2e3; line-height:1.5; font-size:15px;}
   .bigBtn{
-    padding:14px 34px; font-size:18px; font-weight:600; border:none; border-radius:30px; cursor:pointer;
-    background:linear-gradient(90deg,#ffd23f,#ff8f3f); color:#1a1200; letter-spacing:1px;
-    box-shadow:0 6px 24px rgba(255,150,50,.4);
+    padding:14px 34px; font-size:18px; font-weight:600; border:none; border-radius:8px; cursor:pointer;
+    background:linear-gradient(90deg,#2f7de1,#123f8f); color:#eaf2ff; letter-spacing:1px;
+    box-shadow:0 6px 18px rgba(20,70,160,.35);
   }
   .bigBtn:hover{ filter:brightness(1.08); }
   .ghostBtn{
-    padding:12px 28px; font-size:15px; font-weight:600; border-radius:30px; cursor:pointer;
+    padding:12px 28px; font-size:15px; font-weight:600; border-radius:8px; cursor:pointer;
     background:transparent; color:#c9d2e3; border:1px solid rgba(255,255,255,.25);
   }
   .ghostBtn:hover{ background:rgba(255,255,255,.08); }
@@ -100,7 +100,7 @@
   /* ---------- game select menu ---------- */
   #cardRow{display:flex; gap:26px; margin-top:6px; flex-wrap:wrap; justify-content:center;}
   .gameCard{
-    width:250px; padding:22px; border-radius:18px; cursor:pointer; text-align:left;
+    width:250px; padding:22px; border-radius:10px; cursor:pointer; text-align:left;
     background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.15);
     transition:transform .15s ease, background .15s ease;
   }
@@ -122,20 +122,11 @@
 #roomPlayers{display:flex;flex-direction:column;gap:6px;width:100%;}
 .roomPlayer{display:flex;justify-content:space-between;padding:8px 12px;background:rgba(255,255,255,.08);border-radius:8px;}
 #lobbyCounts{font-size:13px;color:#7c8aa8;}
-#waitingMsg{font-size:14px;color:#ffd23f;}
+#waitingMsg{font-size:14px;color:#8fc4ff;}
 </style>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-<script>
-const firebaseConfig = {
-  apiKey: "AIzaSyASj7SfHUMxPsPyPF3t_3vi4X6kJnYCz_M",
-  authDomain: "arcade-3dc6c.firebaseapp.com",
-  projectId: "arcade-3dc6c",
-  storageBucket: "arcade-3dc6c.firebasestorage.app",
-  messagingSenderId: "715821538041",
-  appId: "1:715821538041:web:0db2ce7ee50a223fc1e028"
-};
-</script>
+<script src="firebase-config.js"></script>
 </head>
 <body>
 
@@ -145,6 +136,9 @@ const firebaseConfig = {
   <div class="stat">🏎️ Carts left: <b id="cartCount">-</b></div>
   <div class="stat">⚡ Arena: <b id="arenaSize">-</b></div>
   <div class="stat">🧭 Facing: <b id="facing">-</b></div>
+  <div class="stat">🚀 Boost: <b id="cartBoost">—</b></div>
+  <div class="stat">💨 Q-Dash: <b id="cartDash">READY</b></div>
+
 </div>
 
 <div id="hockeyHud" class="hidden">
@@ -182,7 +176,7 @@ const firebaseConfig = {
   <div class="stat">🧬 Make: <b id="faceTarget">—</b></div>
   <div class="stat">✅ Score: <b id="faceScore">0</b></div>
   <div class="stat">🔥 Streak: <b id="faceStreak">0</b></div>
-  <div class="stat">❤️ Lives: <b id="faceLives">3</b></div>
+  <div class="stat">↩️ Knocked back: <b id="faceLives">0</b></div>
   <div class="stat">🤖 Rival: <b id="faceRival">0</b></div>
 </div>
 
@@ -292,6 +286,8 @@ const swordHud = document.getElementById('swordHud');
 const swordBars = document.getElementById('swordBars');
 
 function hideAllHuds(){
+  if(document.exitPointerLock && document.pointerLockElement) document.exitPointerLock();
+  document.body.style.cursor = '';
   cartsHud.classList.add('hidden');
   hockeyHud.classList.add('hidden');
   racingHud.classList.add('hidden');
@@ -335,13 +331,13 @@ function showIntro(game){
     startBtn.textContent = 'Drop the Puck';
   } else if(game === 'face'){
     introTitle.textContent = 'FACE GATE';
-    introText.textContent = "Your face flies down a tunnel. Every wall has a face carved into it — pull that same face before you reach the wall and you slip straight through. Miss it and you smash a panel and lose a life. A rival avatar is racing the same walls. Everything runs on your device; nothing is recorded or uploaded.";
-    controlsHint.textContent = 'Webcam required · make the face shown on the wall · A/D nudge left and right';
+    introText.textContent = "Your face flies down a tunnel. Every wall has a face carved into it — pull that same face before you reach the wall and you slip straight through. Miss it and the wall bumps you back and you have to take it again. A rival avatar is racing the same walls: first one to clear every gate wins. Everything runs on your device; nothing is recorded or uploaded.";
+    controlsHint.textContent = 'Webcam required · make the face shown on the wall (miss and you get bumped back) · first to the end wins';
     startBtn.textContent = 'Enable Camera & Play';
   } else if(game === 'sword'){
     introTitle.textContent = 'SWORD DUEL';
-    introText.textContent = "Two ragdolls, one arena, one blade each. Walk with WASD and steer your sword with the mouse — the blade follows your cursor, so how fast you move the mouse is how hard you swing. A slow drag just shoves your opponent around; a hard, fast strike carves a chunk off them. Wear them down piece by piece before they do the same to you.";
-    controlsHint.textContent = 'WASD to move · Mouse to swing the blade · Space to lunge';
+    introText.textContent = "Two ragdolls, one arena, one long blade each. Walk with WASD, dash with Q and steer your sword with the mouse — the blade follows your cursor, so how fast you move the mouse is how hard you swing. Steel meets steel: if the blades cross they clash and both swings get deflected, so time your strikes. A slow drag just shoves your opponent around; a hard, fast strike carves a chunk off them.";
+    controlsHint.textContent = 'WASD to move · Q to dash · Mouse to swing the blade · Space to sprint';
     startBtn.textContent = 'Draw Steel';
   } else {
     introTitle.textContent = 'SPEED RUN';
@@ -506,7 +502,7 @@ const Carts = (function(){
     makeTree(Math.cos(a)*r, Math.sin(a)*r);
   }
 
-  const START_RADIUS = 40, MIN_RADIUS = 10.5, SHRINK_TIME = 75;
+  const START_RADIUS = 40, MIN_RADIUS = 10.5, SHRINK_TIME = 35;
   let arenaRadius = START_RADIUS;
   const arenaMat = new THREE.MeshStandardMaterial({map:makeArenaTexture(), roughness:0.55, metalness:0.15});
   const arenaFloor = new THREE.Mesh(new THREE.CircleGeometry(1,64), arenaMat);
@@ -526,7 +522,7 @@ const Carts = (function(){
     rear.position.set(0,0.42*CS,-0.35*CS); rear.castShadow = true; group.add(rear);
 
     const nose = new THREE.Mesh(new THREE.CylinderGeometry(0.04*CS,0.8*CS,1.3*CS,4), new THREE.MeshStandardMaterial({color:base, roughness:0.35, metalness:0.45}));
-    nose.rotateY(Math.PI/4); nose.rotateX(Math.PI/2); nose.scale.set(1,0.7,1);
+    nose.rotateX(Math.PI/2); nose.rotateY(Math.PI/4); nose.scale.set(1,0.7,1);
     nose.position.set(0,0.4*CS,1.05*CS); nose.castShadow = true; group.add(nose);
 
     const stripe = new THREE.Mesh(new THREE.BoxGeometry(0.35*CS,0.03*CS,2.4*CS), new THREE.MeshStandardMaterial({color:accent, roughness:0.3}));
@@ -578,9 +574,11 @@ const Carts = (function(){
       this.x=(Math.random()-0.5)*11; this.z=(Math.random()-0.5)*11;
       this.heading = Math.random()*Math.PI*2;
       this.vx=0; this.vz=0;
-      this.radius = 1.48;
+      this.radius = 1.62;
       this.alive = true; this.outOfBounds = false; this.outTimer = 0;
       this.y = 0; this.slideTimer = 0;
+      this.cleanTime = 0; this.boost = 0; this.dashCd = 0; this.dashTimer = 0;
+
     }
     updateMesh(){
       this.mesh.position.set(this.x, this.y, this.z);
@@ -588,8 +586,18 @@ const Carts = (function(){
     }
   }
 
-  const MAX_SPEED = 24, ACCEL = 26, TURN_RATE = 2.9, DRAG = 0.992;
+  const MAX_SPEED = 24, ACCEL = 38, TURN_RATE = 2.9, DRAG = 0.992;
   const BASE_GRIP = 4.2, HIT_GRIP = 0.9;
+  /* bumping */
+  /* symmetric, speed-based bumping: no free launch, both carts feel the same rules */
+  const BUMP_RESTITUTION = 1.25, BUMP_MIN = 1.5, BUMP_SLIDE = 0.5;
+  /* turning scrub — corners now cost you speed like a real cart */
+  const TURN_SCRUB = 1.35;
+  /* clean-driving momentum boost (medium charge time, lost when bumped) */
+  const CLEAN_CHARGE = 6.5, BOOST_TIME = 3.0, BOOST_MULT = 1.45;
+  /* Q dash */
+  const DASH_IMPULSE = 26, DASH_CD = 5.0, DASH_TIME = 0.35;
+
 
   const player = new Cart(0x2e6fe0, 0xffd23f, true);
   const bots = [ new Cart(0xd6323f,0x2fe0a8,false), new Cart(0x7a3fe0,0xffb23f,false), new Cart(0x2fb85a,0xff5fa0,false) ];
@@ -603,6 +611,8 @@ const Carts = (function(){
   const cartCountEl = document.getElementById('cartCount');
   const arenaSizeEl = document.getElementById('arenaSize');
   const facingEl = document.getElementById('facing');
+  const boostEl = document.getElementById('cartBoost');
+  const dashEl = document.getElementById('cartDash');
 
   function reset(){
     elapsed = 0; arenaRadius = START_RADIUS; updateArenaVisual(arenaRadius);
@@ -610,9 +620,11 @@ const Carts = (function(){
       c.x=(Math.random()-0.5)*18; c.z=(Math.random()-0.5)*18;
       c.heading = Math.random()*Math.PI*2;
       c.vx=0; c.vz=0; c.alive=true; c.outOfBounds=false; c.outTimer=0; c.y=0; c.slideTimer=0;
+      c.cleanTime=0; c.boost=0; c.dashCd=0; c.dashTimer=0;
       c.mesh.rotation.set(0,0,0); c.mesh.visible = true;
     });
   }
+
 
   function updateAI(bot, dt){
     const distFromCenter = Math.hypot(bot.x, bot.z);
@@ -653,16 +665,51 @@ const Carts = (function(){
       const right = keys['d']||keys['arrowright'];
       const curSpeed = Math.hypot(cart.vx, cart.vz);
       const turnScale = Math.min(1, curSpeed/7 + 0.35);
-      if(fwd){ cart.vx += Math.sin(cart.heading)*ACCEL*dt; cart.vz += Math.cos(cart.heading)*ACCEL*dt; }
+
+      /* clean-driving charge -> momentum boost */
+      if(cart.boost > 0){ cart.boost -= dt; }
+      else {
+        cart.cleanTime += dt;
+        if(cart.cleanTime >= CLEAN_CHARGE){ cart.cleanTime = 0; cart.boost = BOOST_TIME; }
+      }
+      if(cart.dashCd > 0) cart.dashCd -= dt;
+      if(cart.dashTimer > 0) cart.dashTimer -= dt;
+
+      /* Q dash — big forward burst on a cooldown */
+      if(keys['q'] && cart.dashCd <= 0){
+        cart.dashCd = DASH_CD; cart.dashTimer = DASH_TIME;
+        cart.vx += Math.sin(cart.heading)*DASH_IMPULSE;
+        cart.vz += Math.cos(cart.heading)*DASH_IMPULSE;
+      }
+
+      const accelMult = (cart.boost > 0 ? BOOST_MULT : 1) * (cart.dashTimer > 0 ? 1.6 : 1);
+      if(fwd){ cart.vx += Math.sin(cart.heading)*ACCEL*accelMult*dt; cart.vz += Math.cos(cart.heading)*ACCEL*accelMult*dt; }
       if(back){ cart.vx -= Math.sin(cart.heading)*ACCEL*0.7*dt; cart.vz -= Math.cos(cart.heading)*ACCEL*0.7*dt; }
-      if(left) cart.heading += TURN_RATE*dt*turnScale;
-      if(right) cart.heading -= TURN_RATE*dt*turnScale;
+      // Steering rotates the existing velocity with the cart, but scrubs some
+      // forward speed so corners slow you down like a real cart.
+      let steer = 0;
+      if(left) steer += TURN_RATE*dt*turnScale;
+      if(right) steer -= TURN_RATE*dt*turnScale;
+      if(steer !== 0){
+        cart.heading += steer;
+        if(cart.slideTimer <= 0){
+          const cs = Math.cos(steer), sn = Math.sin(steer);
+          const nvx = cart.vx*cs + cart.vz*sn;
+          const nvz = -cart.vx*sn + cart.vz*cs;
+          cart.vx = nvx; cart.vz = nvz;
+          /* scrub: sharper steering at higher speed bleeds more speed */
+          const scrub = Math.exp(-TURN_SCRUB*Math.abs(steer)*(0.6 + curSpeed/MAX_SPEED));
+          cart.vx *= scrub; cart.vz *= scrub;
+        }
+      }
     } else {
       updateAI(cart, dt);
     }
+
     cart.vx *= DRAG; cart.vz *= DRAG;
     const spd = Math.hypot(cart.vx, cart.vz);
-    if(spd > MAX_SPEED){ cart.vx = cart.vx/spd*MAX_SPEED; cart.vz = cart.vz/spd*MAX_SPEED; }
+    const capSpeed = cart.isPlayer ? Infinity : MAX_SPEED;
+    if(spd > capSpeed){ cart.vx = cart.vx/spd*capSpeed; cart.vz = cart.vz/spd*capSpeed; }
 
     const fwdX = Math.sin(cart.heading), fwdZ = Math.cos(cart.heading);
     const latX = fwdZ, latZ = -fwdX;
@@ -693,12 +740,18 @@ const Carts = (function(){
           const overlap = (minDist-dist);
           a.x += nx*overlap*0.5; a.z += nz*overlap*0.5;
           b.x -= nx*overlap*0.5; b.z -= nz*overlap*0.5;
-          const aSpeed=Math.hypot(a.vx,a.vz), bSpeed=Math.hypot(b.vx,b.vz);
-          const impact = aSpeed+bSpeed+6;
-          const KNOCKBACK = 1.15;
-          a.vx += nx*impact*KNOCKBACK; a.vz += nz*impact*KNOCKBACK;
-          b.vx -= nx*impact*KNOCKBACK; b.vz -= nz*impact*KNOCKBACK;
-          a.slideTimer = 1.1; b.slideTimer = 1.1;
+          const rvx=a.vx-b.vx, rvz=a.vz-b.vz;
+          /* equal-mass elastic bounce: the push scales with how hard the two
+             actually collide, and both carts get the exact same treatment. */
+          const closingSpeed = Math.max(0, -(rvx*nx+rvz*nz));
+          const impulse = Math.max(BUMP_MIN, closingSpeed) * BUMP_RESTITUTION * 0.5;
+          a.vx += nx*impulse; a.vz += nz*impulse;
+          b.vx -= nx*impulse; b.vz -= nz*impulse;
+          a.slideTimer = BUMP_SLIDE; b.slideTimer = BUMP_SLIDE;
+          /* getting bumped kills your clean-driving boost */
+          a.cleanTime = 0; a.boost = 0;
+          b.cleanTime = 0; b.boost = 0;
+
         }
       }
     }
@@ -732,8 +785,12 @@ const Carts = (function(){
     cartCountEl.textContent = aliveCount;
     arenaSizeEl.textContent = arenaRadius.toFixed(1) + 'm';
     facingEl.textContent = headingLabel(player.heading);
-    if(!player.alive){ finishOnline('💥 YOU GOT BUMPED OFF', '#ff5f6d', 'Race Again', elapsed, false); }
-    else if(aliveCount === 1){ finishOnline('🏆 YOU WIN!', '#ffd23f', 'Race Again', elapsed, true); }
+    if(player.boost > 0){ boostEl.textContent = 'ON ' + player.boost.toFixed(1) + 's'; }
+    else { boostEl.textContent = Math.round(Math.min(100, player.cleanTime/CLEAN_CHARGE*100)) + '%'; }
+    dashEl.textContent = player.dashCd > 0 ? player.dashCd.toFixed(1) + 's' : 'READY';
+
+    if(!player.alive){ finishOnline('YOU GOT BUMPED OFF', '#7f93b5', 'Race Again', elapsed, false); }
+    else if(aliveCount === 1){ finishOnline('YOU WIN', '#8fc4ff', 'Race Again', elapsed, true); }
   }
   function render(){ renderer.render(scene, camera); }
   function onResize(){ camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix(); }
@@ -770,7 +827,7 @@ const Hockey = (function(){
   function makeTableTexture(){
     const c = document.createElement('canvas'); c.width=c.height=512;
     const ctx = c.getContext('2d');
-    ctx.fillStyle = '#0d3a5c'; ctx.fillRect(0,0,512,512);
+    ctx.fillStyle = '#0a2c56'; ctx.fillRect(0,0,512,512);
     const grad = ctx.createRadialGradient(256,256,40,256,256,360);
     grad.addColorStop(0,'rgba(255,255,255,0.10)'); grad.addColorStop(1,'rgba(255,255,255,0)');
     ctx.fillStyle = grad; ctx.fillRect(0,0,512,512);
@@ -788,7 +845,7 @@ const Hockey = (function(){
   apron.position.y = -0.85; apron.receiveShadow = true;
   scene.add(apron);
 
-  const railMat = new THREE.MeshStandardMaterial({color:0xff3355, roughness:0.4, metalness:0.3, emissive:0x330008, emissiveIntensity:0.4});
+  const railMat = new THREE.MeshStandardMaterial({color:0x1b5fd9, roughness:0.4, metalness:0.3, emissive:0x061a3c, emissiveIntensity:0.4});
   function makeRail(w,h,d,x,y,z){
     const r = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), railMat);
     r.position.set(x,y,z); r.castShadow = true; r.receiveShadow = true;
@@ -803,7 +860,7 @@ const Hockey = (function(){
     });
   });
   function makeGoalGlow(z){
-    const glow = new THREE.Mesh(new THREE.PlaneGeometry(GOAL_WIDTH,0.3), new THREE.MeshStandardMaterial({color:0xffd23f, emissive:0xffd23f, emissiveIntensity:1, transparent:true, opacity:0.85}));
+    const glow = new THREE.Mesh(new THREE.PlaneGeometry(GOAL_WIDTH,0.3), new THREE.MeshStandardMaterial({color:0x4da3ff, emissive:0x4da3ff, emissiveIntensity:1, transparent:true, opacity:0.85}));
     glow.rotation.x = -Math.PI/2; glow.position.set(0,0.02,z);
     scene.add(glow);
   }
@@ -825,15 +882,65 @@ const Hockey = (function(){
   const playerPaddle = makePaddle(0x4ea8ff);
   playerPaddle.position.set(0,0,HALF_L-3.2*SCALE);
   scene.add(playerPaddle);
-  const cpuPaddle = makePaddle(0xff5f6d);
+  const cpuPaddle = makePaddle(0x7f93b5);
   cpuPaddle.position.set(0,0,-HALF_L+3.2*SCALE);
   scene.add(cpuPaddle);
+
+  // simple low-poly player figures that hold each paddle
+  function makeFigure(color, facing){
+    const g = new THREE.Group();
+    const skin = new THREE.MeshStandardMaterial({color:0xdfe8f7, roughness:0.7});
+    const suit = new THREE.MeshStandardMaterial({color, roughness:0.5, metalness:0.15});
+    const torso = new THREE.Mesh(new THREE.BoxGeometry(1.5,2.1,0.9), suit);
+    torso.position.y = 2.4; torso.castShadow = true; g.add(torso);
+    const hips = new THREE.Mesh(new THREE.BoxGeometry(1.4,0.9,0.9), new THREE.MeshStandardMaterial({color:0x16233d, roughness:0.7}));
+    hips.position.y = 1.05; g.add(hips);
+    [-0.42,0.42].forEach(x=>{
+      const leg = new THREE.Mesh(new THREE.BoxGeometry(0.5,1.4,0.5), new THREE.MeshStandardMaterial({color:0x16233d, roughness:0.8}));
+      leg.position.set(x,0.7,0); g.add(leg);
+    });
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.62,18,14), skin);
+    head.position.y = 3.9; head.castShadow = true; g.add(head);
+    const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.66,0.66,0.28,16), suit);
+    cap.position.y = 4.3; g.add(cap);
+    const armMat = skin;
+    const arms = [];
+    [-1,1].forEach(side=>{
+      const pivot = new THREE.Group();
+      pivot.position.set(side*0.95, 3.2, 0);
+      const arm = new THREE.Mesh(new THREE.BoxGeometry(0.42,1.9,0.42), armMat);
+      arm.position.y = -0.95; pivot.add(arm);
+      g.add(pivot); arms.push(pivot);
+    });
+    g.userData = { arms, facing };
+    return g;
+  }
+  const playerFigure = makeFigure(0x2f7de1, 1);
+  const cpuFigure = makeFigure(0x51617f, -1);
+  cpuFigure.rotation.y = Math.PI;
+  scene.add(playerFigure); scene.add(cpuFigure);
+  const FIGURE_BACK = 3.4;
+  function poseFigure(fig, padX, padZ, side){
+    // stand a little behind the paddle, leaning in toward it
+    const homeZ = side*(HALF_L + 1.2);
+    const bx = padX*0.55;
+    const bz = padZ + side*FIGURE_BACK;
+    fig.position.x += (bx - fig.position.x)*0.25;
+    fig.position.z += (THREE.MathUtils.clamp(bz, Math.min(homeZ, padZ), Math.max(homeZ, padZ)) - fig.position.z)*0.25;
+    const dx = padX - fig.position.x, dz = padZ - fig.position.z;
+    fig.rotation.y = Math.atan2(dx, dz);
+    const reach = THREE.MathUtils.clamp(Math.hypot(dx,dz)/FIGURE_BACK, 0, 1.4);
+    fig.userData.arms.forEach((a,i)=>{
+      a.rotation.x = -0.5 - reach*0.9;
+      a.rotation.z = (i===0?1:-1)*(0.25 + reach*0.15);
+    });
+  }
 
   const PUCK_R = 0.75*SCALE;
   const puck = new THREE.Mesh(new THREE.CylinderGeometry(PUCK_R,PUCK_R,0.3*SCALE,28), new THREE.MeshStandardMaterial({color:0x111111, roughness:0.4, metalness:0.2, emissive:0x222222}));
   puck.position.set(0,0.15*SCALE,0); puck.castShadow = true;
   scene.add(puck);
-  const puckRim = new THREE.Mesh(new THREE.TorusGeometry(PUCK_R-0.05,0.05,8,24), new THREE.MeshStandardMaterial({color:0x7fffe0, emissive:0x7fffe0, emissiveIntensity:0.8}));
+  const puckRim = new THREE.Mesh(new THREE.TorusGeometry(PUCK_R-0.05,0.05,8,24), new THREE.MeshStandardMaterial({color:0x8fc4ff, emissive:0x8fc4ff, emissiveIntensity:0.8}));
   puckRim.rotation.x = Math.PI/2; puckRim.position.y = 0.16*SCALE;
   scene.add(puckRim);
 
@@ -846,41 +953,92 @@ const Hockey = (function(){
 
   let youScore = 0, cpuScore = 0;
   const WIN_SCORE = 7;
-  const PUCK_FRICTION = 0.994;
-  const PUCK_MAX_SPEED = 40*SCALE;
-  const SMOOTH_RATE = 45; // higher = snappier/closer to instant, lower = smoother/floatier
+  const PUCK_FRICTION = 0.996;
+  const PUCK_MAX_SPEED = 54*SCALE;
+  const SMOOTH_RATE = 40; // higher = snappier/closer to instant, lower = smoother/floatier
+  const MOUSE_SENS = 1.15; // paddle travel per mouse movement
+
 
   const raycaster = new THREE.Raycaster();
   const mouseNDC = new THREE.Vector2(0,0);
   const tablePlane = new THREE.Plane(new THREE.Vector3(0,1,0), 0);
   const hitPoint = new THREE.Vector3();
 
-  window.addEventListener('mousemove', e=>{
-    mouseNDC.x = (e.clientX/innerWidth)*2-1;
-    mouseNDC.y = -(e.clientY/innerHeight)*2+1;
+  /* Pointer lock: the OS cursor disappears and raw mouse deltas drive the
+     paddle, hard-clamped to the rails so pushing into a wall pins it there. */
+  let cursorInit = false;
+  function isLocked(){ return document.pointerLockElement === renderer.domElement; }
+  function lockPointer(){
+    if(activeGame !== 'hockey') return;
+    if(!isLocked() && renderer.domElement.requestPointerLock) renderer.domElement.requestPointerLock();
+  }
+  function unlockPointer(){
+    if(isLocked() && document.exitPointerLock) document.exitPointerLock();
+  }
+  renderer.domElement.addEventListener('mousedown', ()=>{ lockPointer(); });
+  document.addEventListener('pointerlockchange', ()=>{
+    document.body.style.cursor = isLocked() ? 'none' : '';
   });
 
-  function updatePlayerTarget(){
-    raycaster.setFromCamera(mouseNDC, camera);
-    if(raycaster.ray.intersectPlane(tablePlane, hitPoint)){
-      let x = hitPoint.x, z = hitPoint.z;
-      x = Math.max(-HALF_W+PADDLE_R, Math.min(HALF_W-PADDLE_R, x));
-      z = Math.max(0.6*SCALE, Math.min(HALF_L-PADDLE_R, z));
-      playerTarget.x = x; playerTarget.z = z;
-    }
+  function clampTarget(){
+    playerTarget.x = Math.max(-HALF_W+PADDLE_R, Math.min(HALF_W-PADDLE_R, playerTarget.x));
+    playerTarget.z = Math.max(0.6*SCALE, Math.min(HALF_L-PADDLE_R, playerTarget.z));
   }
+
+  window.addEventListener('mousemove', e=>{
+    if(activeGame !== 'hockey') return;
+    mouseNDC.x = (e.clientX/innerWidth)*2-1;
+    mouseNDC.y = -(e.clientY/innerHeight)*2+1;
+    const locked = isLocked();
+    if(!locked && !cursorInit){
+      // not locked yet: track the pointer position on the table
+      raycaster.setFromCamera(mouseNDC, camera);
+      if(raycaster.ray.intersectPlane(tablePlane, hitPoint)){
+        playerTarget.x = hitPoint.x; playerTarget.z = hitPoint.z;
+        clampTarget();
+      }
+      return;
+    }
+    cursorInit = true;
+    const dx = e.movementX, dy = e.movementY;
+    if(dx === undefined || dy === undefined){
+      raycaster.setFromCamera(mouseNDC, camera);
+      if(raycaster.ray.intersectPlane(tablePlane, hitPoint)){
+        playerTarget.x = hitPoint.x; playerTarget.z = hitPoint.z;
+      }
+    } else {
+      const unitsPerPx = (HALF_W*2)/innerWidth * 1.35 * MOUSE_SENS;
+      playerTarget.x += dx*unitsPerPx;
+      playerTarget.z += dy*unitsPerPx;
+    }
+    clampTarget();
+  });
+
+
+  function updatePlayerTarget(){
+    clampTarget();
+  }
+
 
   const youScoreEl = document.getElementById('youScore');
   const cpuScoreEl = document.getElementById('cpuScore');
 
   function reset(){
+    cpuStuck = 0; puckStuck = 0; cursorInit = false;
+    playerPos = {x:0, z: HALF_L-3.2*SCALE};
+    playerPrevPos = {x:0, z: HALF_L-3.2*SCALE};
+    playerTarget = {x:0, z: HALF_L-3.2*SCALE};
+
+    playerFigure.position.set(0, 0, HALF_L + 1.2);
+    cpuFigure.position.set(0, 0, -HALF_L - 1.2);
     youScore = 0; cpuScore = 0;
     youScoreEl.textContent = 0; cpuScoreEl.textContent = 0;
     resetPuck(Math.random()<0.5 ? 1 : -1);
+    lockPointer();
   }
   function resetPuck(towardSign){
     puckPos = {x:0,z:0};
-    puckVel = {x:(Math.random()-0.5)*4*SCALE, z: towardSign*8*SCALE};
+    puckVel = {x:(Math.random()-0.5)*6*SCALE, z: towardSign*12*SCALE};
   }
   function flashGoal(){
     puckRim.material.emissiveIntensity = 3;
@@ -893,6 +1051,17 @@ const Hockey = (function(){
     const spd = Math.hypot(puckVel.x, puckVel.z);
     if(spd > PUCK_MAX_SPEED){ puckVel.x = puckVel.x/spd*PUCK_MAX_SPEED; puckVel.z = puckVel.z/spd*PUCK_MAX_SPEED; }
 
+    // free a puck that has died against a wall or in a corner
+    const sp = Math.hypot(puckVel.x, puckVel.z);
+    const nearWall = Math.abs(puckPos.x) > HALF_W - PUCK_R - 0.6 || Math.abs(puckPos.z) > HALF_L - PUCK_R - 0.6;
+    if(sp < 1.6*SCALE && nearWall) puckStuck += dt; else puckStuck = 0;
+    if(puckStuck > 1.1){
+      puckStuck = 0;
+      const nx = -Math.sign(puckPos.x || 1), nz = -Math.sign(puckPos.z || 1);
+      puckVel.x = nx*6*SCALE + (Math.random()-0.5)*2;
+      puckVel.z = nz*6*SCALE;
+    }
+
     const limX = HALF_W - PUCK_R - 0.15;
     if(puckPos.x > limX){ puckPos.x = limX; puckVel.x *= -0.92; }
     if(puckPos.x < -limX){ puckPos.x = -limX; puckVel.x *= -0.92; }
@@ -903,7 +1072,7 @@ const Hockey = (function(){
     if(puckPos.z > limZ){
       if(inGoalMouth && puckPos.z > HALF_L - PUCK_R){
         cpuScore++; cpuScoreEl.textContent = cpuScore; flashGoal();
-        if(cpuScore >= WIN_SCORE) finishOnline('💻 CPU WINS THE MATCH', '#ff5f6d', 'Rematch', youScore, false);
+        if(cpuScore >= WIN_SCORE) finishOnline('CPU WINS THE MATCH', '#7f93b5', 'Rematch', youScore, false);
         else resetPuck(-1);
         return;
       } else { puckPos.z = limZ; puckVel.z *= -0.92; }
@@ -911,7 +1080,7 @@ const Hockey = (function(){
     if(puckPos.z < -limZ){
       if(inGoalMouth && puckPos.z < -HALF_L + PUCK_R){
         youScore++; youScoreEl.textContent = youScore; flashGoal();
-        if(youScore >= WIN_SCORE) finishOnline('🏆 YOU WIN THE MATCH!', '#4ea8ff', 'Rematch', youScore, true);
+        if(youScore >= WIN_SCORE) finishOnline('YOU WIN THE MATCH', '#4da3ff', 'Rematch', youScore, true);
         else resetPuck(1);
         return;
       } else { puckPos.z = -limZ; puckVel.z *= -0.92; }
@@ -928,17 +1097,31 @@ const Hockey = (function(){
       puckPos.z = padPos.z + nz*minDist;
       const relSpeed = Math.hypot(padVelX, padVelZ);
       const puckSpeed = Math.hypot(puckVel.x, puckVel.z);
-      const kick = Math.max(relSpeed*1.6, puckSpeed*0.5, 5*SCALE);
+      const kick = Math.max(relSpeed*1.9, puckSpeed*0.62, 7*SCALE);
       puckVel.x = nx*kick + padVelX*0.5;
       puckVel.z = nz*kick + padVelZ*0.5;
     }
   }
 
+  let cpuStuck = 0, puckStuck = 0;
   function updateCPU(dt){
-    const targetX = Math.abs(puckPos.z) < HALF_L ? puckPos.x*0.9 : 0;
+    let targetX = Math.abs(puckPos.z) < HALF_L ? puckPos.x*0.9 : 0;
     let targetZ = -HALF_L + 3.2*SCALE;
     if(puckPos.z < -1){ targetZ = Math.max(-HALF_L+PADDLE_R, Math.min(-0.6*SCALE, puckPos.z-0.3)); }
-    const speed = 13*SCALE;
+    // never let the CPU bury itself in a back corner
+    const cornerX = HALF_W - PADDLE_R - 1.2*SCALE;
+    const cornerZ = -HALF_L + PADDLE_R + 1.2*SCALE;
+    const inCorner = Math.abs(cpuPos.x) > cornerX && cpuPos.z < cornerZ;
+    const puckSpeed = Math.hypot(puckVel.x, puckVel.z);
+    if(inCorner && (puckSpeed < 3*SCALE || Math.abs(puckPos.x) < cornerX)) cpuStuck += dt; else cpuStuck = Math.max(0, cpuStuck - dt*2);
+    if(cpuStuck > 0.6){
+      // recover: drive back out to the middle of its own half
+      targetX = puckPos.x*0.3;
+      targetZ = -HALF_L + 4.2*SCALE;
+      if(cpuStuck > 2.2) cpuStuck = 0;
+    }
+    targetX = THREE.MathUtils.clamp(targetX, -cornerX, cornerX);
+    const speed = 16*SCALE;
     const dx = targetX-cpuPos.x, dz = targetZ-cpuPos.z;
     const d = Math.hypot(dx,dz);
     let vx=0, vz=0;
@@ -968,6 +1151,8 @@ const Hockey = (function(){
 
     playerPaddle.position.set(playerPos.x, 0, playerPos.z);
     cpuPaddle.position.set(cpuPos.x, 0, cpuPos.z);
+    poseFigure(playerFigure, playerPos.x, playerPos.z, 1);
+    poseFigure(cpuFigure, cpuPos.x, cpuPos.z, -1);
     puck.position.set(puckPos.x, 0.15*SCALE, puckPos.z);
     puckRim.position.set(puckPos.x, 0.16*SCALE, puckPos.z);
   }
@@ -1124,8 +1309,8 @@ const Racing = (function(){
   function makeHazardTexture(){
     const c = document.createElement('canvas'); c.width = 128; c.height = 32;
     const ctx = c.getContext('2d');
-    ctx.fillStyle = '#12141f'; ctx.fillRect(0,0,128,32);
-    ctx.fillStyle = '#ffd23f';
+    ctx.fillStyle = '#0a1730'; ctx.fillRect(0,0,128,32);
+    ctx.fillStyle = '#4da3ff';
     for(let i=-2;i<10;i++){
       ctx.beginPath();
       ctx.moveTo(i*16, 0); ctx.lineTo(i*16+9, 0); ctx.lineTo(i*16+9-18, 32); ctx.lineTo(i*16-18, 32);
@@ -1139,16 +1324,16 @@ const Racing = (function(){
   const hazardMat  = new THREE.MeshStandardMaterial({map:hazardTex, roughness:0.6, metalness:0.15});
   const bodyMat    = new THREE.MeshStandardMaterial({color:0x39415f, roughness:0.65, metalness:0.35});
   const capMat     = new THREE.MeshStandardMaterial({color:0x9aa8cc, roughness:0.4, metalness:0.55});
-  const warnMat    = new THREE.MeshStandardMaterial({color:0xff5f6d, emissive:0xff2f4d, emissiveIntensity:1.4, roughness:0.4});
-  const beaconMat  = new THREE.MeshBasicMaterial({color:0xffefa8});
-  const gateMat    = new THREE.MeshStandardMaterial({color:0xffd23f, emissive:0x8a5f00, emissiveIntensity:0.9, roughness:0.5});
+  const warnMat    = new THREE.MeshStandardMaterial({color:0x6f8cc4, emissive:0x2f5fdd, emissiveIntensity:1.4, roughness:0.4});
+  const beaconMat  = new THREE.MeshBasicMaterial({color:0xbcdcff});
+  const gateMat    = new THREE.MeshStandardMaterial({color:0x2f7de1, emissive:0x0b2f6d, emissiveIntensity:0.9, roughness:0.5});
   const gatePostMat= new THREE.MeshStandardMaterial({color:0x1c2137, roughness:0.8});
 
   function makeArrowTexture(){
     const c = document.createElement('canvas'); c.width = c.height = 128;
     const ctx = c.getContext('2d');
     ctx.clearRect(0,0,128,128);
-    ctx.fillStyle = '#ffe066';
+    ctx.fillStyle = '#8fd0ff';
     ctx.beginPath();
     ctx.moveTo(120,64); ctx.lineTo(66,16); ctx.lineTo(66,44); ctx.lineTo(10,44);
     ctx.lineTo(10,84); ctx.lineTo(66,84); ctx.lineTo(66,112);
@@ -1179,6 +1364,26 @@ const Racing = (function(){
     return g;
   }
 
+  const rockMat = new THREE.MeshStandardMaterial({color:0x24365c, roughness:0.95, metalness:0.05, flatShading:true});
+  const rockMat2 = new THREE.MeshStandardMaterial({color:0x16233f, roughness:1, flatShading:true});
+  function buildRockProp(){
+    const g = new THREE.Group();
+    const core = new THREE.Mesh(new THREE.IcosahedronGeometry(2.35, 0), rockMat);
+    core.position.y = 2.0; core.scale.set(1.15, 0.95, 0.85); core.castShadow = true; g.add(core);
+    const chunkA = new THREE.Mesh(new THREE.IcosahedronGeometry(1.25, 0), rockMat2);
+    chunkA.position.set(-1.6, 1.0, 0.3); chunkA.castShadow = true; g.add(chunkA);
+    const chunkB = new THREE.Mesh(new THREE.IcosahedronGeometry(1.0, 0), rockMat2);
+    chunkB.position.set(1.7, 3.1, -0.2); chunkB.castShadow = true; g.add(chunkB);
+    // display screen physically mounted on the rock face
+    const screen = new THREE.Group();
+    const bezel = new THREE.Mesh(new THREE.BoxGeometry(2.5, 1.7, 0.22), new THREE.MeshStandardMaterial({color:0x0a1122, roughness:0.6}));
+    screen.add(bezel);
+    g.add(screen);
+    screen.position.set(0, 2.1, 1.55);
+    g.userData.screen = screen;
+    return g;
+  }
+
   function buildLowGate(){
     const g = new THREE.Group();
     const bar = new THREE.Mesh(new THREE.BoxGeometry(ROAD_W, 0.62, 1.0), gateMat);
@@ -1198,20 +1403,22 @@ const Racing = (function(){
     const grp = new THREE.Group();
     const prop = buildTallProp();
     const gate = buildLowGate();
-    const arrow = new THREE.Mesh(new THREE.PlaneGeometry(3.4, 3.4),
+    const rock = buildRockProp();
+    const arrow = new THREE.Mesh(new THREE.PlaneGeometry(2.0, 1.35),
       new THREE.MeshBasicMaterial({map:arrowTex, transparent:true, opacity:0.95, depthWrite:false, side:THREE.DoubleSide, fog:false}));
-    arrow.position.set(0, 5.6, 0);
+    arrow.position.set(0, 0, 0.14);
     arrow.visible = false;
-    grp.add(prop); grp.add(gate); grp.add(arrow);
+    rock.userData.screen.add(arrow);
+    grp.add(prop); grp.add(gate); grp.add(rock); grp.add(arrow.parent ? rock : rock);
     grp.visible = false;
     scene.add(grp);
-    obstacles.push({grp, prop, gate, arrow, type:'tall', lane:0, x:0, x0:0, x1:0, z:0,
+    obstacles.push({grp, prop, gate, rock, arrow, type:'tall', lane:0, x:0, x0:0, x1:0, z:0,
                     slideDir:0, slideT:0, blink:0, active:false});
   }
 
   /* ---------- crash sparks ---------- */
   const sparks = [];
-  const sparkMat = new THREE.MeshBasicMaterial({color:0xffd27a, fog:false});
+  const sparkMat = new THREE.MeshBasicMaterial({color:0x9fd0ff, fog:false});
   for(let i=0;i<44;i++){
     const m = new THREE.Mesh(new THREE.BoxGeometry(0.16,0.16,0.16), sparkMat);
     m.visible = false; scene.add(m);
@@ -1276,7 +1483,7 @@ const Racing = (function(){
   const ACCEL = 9.2;             // km/h per second
   const STEER_SPEED = 42;         // much more sensitive left/right
   const STEER_ACCEL = 240;
-  const GRAVITY = -46, JUMP_V = 15.5;
+  const GRAVITY = -38, JUMP_V = 17.2;
   const TRACK_UNITS = 1800;      // measured track length (~45-60s run)
   const M_PER_UNIT = 1;          // HUD metres per world unit
   const FINISH_VIS = 340;        // finish gate becomes visible this far out
@@ -1343,22 +1550,32 @@ const Racing = (function(){
       o.active = true; o.grp.visible = true;
       o.lane = l;
       o.type = Math.random() < 0.35 ? 'low' : 'tall';
-      o.prop.visible = o.type === 'tall';
       o.gate.visible = o.type === 'low';
-      o.prop.rotation.z = 0;
+      o.prop.rotation.z = 0; o.rock.rotation.set(0,0,0);
       o.blink = 0; o.slideT = 0; o.slideDir = 0; o.arrow.visible = false;
+      o.prop.visible = false; o.rock.visible = false;
+      const lim2 = ROAD_W/2 - 2.6;
       if(o.type === 'tall'){
-        const lim2 = ROAD_W/2 - 2.6;
-        o.x = (Math.random()*2-1) * lim2;
-        if(Math.random() < 0.42){
-          o.slideDir = o.x > 0 ? -1 : 1;
+        const sliding = Math.random() < 0.42;
+        if(sliding){
+          // start off to one side (random side, random offset) and slide across,
+          // so sliding rocks no longer read as always coming from the middle
+          o.slideDir = Math.random() < 0.5 ? 1 : -1;
+          o.x = -o.slideDir * (lim2 * (0.45 + Math.random()*0.55));
           o.x0 = o.x;
-          o.x1 = Math.max(-lim2, Math.min(lim2, o.x + o.slideDir*(5.5 + Math.random()*3.5)));
+          o.x1 = Math.max(-lim2, Math.min(lim2, o.x + o.slideDir*(6.5 + Math.random()*5)));
           o.arrow.scale.x = o.slideDir;
+        } else {
+          o.x = (Math.random()*2-1) * lim2;
         }
+        // sliding hazards are rocks; static ones stay as barriers
+        o.rock.visible = o.slideDir !== 0;
+        o.prop.visible = o.slideDir === 0;
       } else {
-        o.x = 0;
+        o.x = 0; // full-width jump gate stays centered
       }
+
+
       o.z = spawnZ;
       o.grp.position.set((l===0?P_OFF:R_OFF) + o.x, 0, o.z);
     }
@@ -1447,18 +1664,24 @@ const Racing = (function(){
 
       /* sliding obstacles: flash an arrow, then cut across at the last second */
       if(o.slideDir !== 0){
+        // screen only lights up at the last second, right before it commits
+        const ARROW_LEAD = 22;
         if(o.z < SLIDE_TRIGGER_Z){
-          o.blink += dt;
-          const on = (o.blink % 0.34) < 0.19;
-          o.arrow.visible = true;
-          o.arrow.material.opacity = on ? 0.95 : 0.18;
-          o.arrow.position.x = o.slideDir * 2.6;
+          const close = o.z > SLIDE_TRIGGER_Z - ARROW_LEAD;
+          o.arrow.visible = close;
+          if(close){
+            o.blink += dt;
+            const on = (o.blink % 0.24) < 0.15;
+            o.arrow.material.opacity = on ? 1 : 0.15;
+          }
         } else {
-          o.arrow.visible = false;
+          o.arrow.visible = true;
+          o.arrow.material.opacity = 1;
           o.slideT = Math.min(1, o.slideT + dt/0.34);
           const e = 1 - Math.pow(1 - o.slideT, 3);
           o.x = o.x0 + (o.x1 - o.x0) * e;
-          o.prop.rotation.z = -o.slideDir * (1 - o.slideT) * 0.18;
+          o.rock.rotation.z = -o.slideDir * (1 - o.slideT) * 0.5;
+          o.rock.rotation.x += dt*0.6;
         }
       }
       o.grp.position.set((o.lane===0?P_OFF:R_OFF) + o.x, 0, o.z);
@@ -1488,7 +1711,11 @@ const Racing = (function(){
 
     /* spawn ahead — stop laying obstacles right before the finish */
     spawnZ += Math.max(dz, rdz);
-    const spacing = Math.max(20, 44 - kmh*0.06);
+    // minimum gap grows with speed so fast sections can never stack gates
+    // closer together than a single jump can clear
+    const unitsPerSec = kmh/9;
+    const airTime = (2*JUMP_V)/Math.abs(GRAVITY);
+    const spacing = Math.max(38, unitsPerSec*airTime*2.1);
     if(spawnZ > -140 && remaining > 200){
       spawnZ -= spacing;
       spawnRow();
@@ -1499,11 +1726,11 @@ const Racing = (function(){
     finish.visible = remaining < FINISH_VIS;
     if(!rivalDone && distR >= TRACK_UNITS) rivalDone = true;
     if(remaining <= 0){
-      endRace(rivalDone ? '🥈 RIVAL TOOK IT — ' + fmt(raceTime) : '🏆 YOU WIN! ' + fmt(raceTime), rivalDone ? '#ffd23f' : '#4ea8ff', 'Race Again', raceTime, !rivalDone);
+      endRace(rivalDone ? 'RIVAL TOOK IT — ' + fmt(raceTime) : 'YOU WIN — ' + fmt(raceTime), rivalDone ? '#7f93b5' : '#4da3ff', 'Race Again', raceTime, !rivalDone);
       return;
     }
     if(rivalDone && remaining > 60){
-      endRace('🥈 RIVAL CROSSED FIRST', '#ff5f6d', 'Race Again', raceTime, false);
+      endRace('RIVAL CROSSED FIRST', '#7f93b5', 'Race Again', raceTime, false);
       return;
     }
 
@@ -1586,9 +1813,14 @@ const FaceGate = (function(){
     {id:'smile',  label:'BIG SMILE',   emoji:'😁'},
     {id:'brows',  label:'BROWS UP',    emoji:'😯'},
     {id:'pucker', label:'KISS FACE',   emoji:'😗'},
-    {id:'tongue', label:'TONGUE OUT',  emoji:'😛'},
-    {id:'squint', label:'SQUINT',      emoji:'😑'}
+    {id:'squint', label:'SQUINT',      emoji:'😑'},
+    {id:'frown',  label:'BIG FROWN',   emoji:'🙁'},
+    {id:'puff',   label:'PUFF CHEEKS', emoji:'😤'},
+    {id:'wink',   label:'WINK',        emoji:'😉'},
+    {id:'sideL',  label:'MOUTH LEFT',  emoji:'😏'},
+    {id:'sideR',  label:'MOUTH RIGHT', emoji:'😼'}
   ];
+
 
   function drawWallFace(ex, color){
     const c = document.createElement('canvas'); c.width = 512; c.height = 512;
@@ -1611,29 +1843,28 @@ const FaceGate = (function(){
     ctx.lineWidth = 14; ctx.lineCap = 'round';
     const browY = ex.id === 'brows' ? 130 : 165;
     for(const s of [-1,1]){
+      const frownTilt = ex.id === 'frown' ? -16 : 0;
       ctx.beginPath();
-      ctx.moveTo(256 + s*95, browY + (ex.id==='squint'? 12:0));
-      ctx.lineTo(256 + s*35, browY - 12 + (ex.id==='squint'? 22:0));
+      ctx.moveTo(256 + s*95, browY + (ex.id==='squint'? 12:0) + (ex.id==='frown'? -6:0));
+      ctx.lineTo(256 + s*35, browY - 12 + (ex.id==='squint'? 22:0) - frownTilt);
       ctx.stroke();
     }
     /* eyes */
     for(const s of [-1,1]){
-      if(ex.id === 'squint'){
+      const winkClosed = ex.id === 'wink' && s === 1;
+      if(ex.id === 'squint' || winkClosed){
         ctx.lineWidth = 16;
         ctx.beginPath(); ctx.moveTo(256 + s*95, 225); ctx.lineTo(256 + s*35, 225); ctx.stroke();
       } else {
         ctx.beginPath(); ctx.ellipse(256 + s*65, 225, 22, ex.id==='brows'?28:20, 0, 0, Math.PI*2); ctx.fill();
       }
     }
-    /* tongue out shape */
-    if(ex.id === 'tongue'){
-      ctx.fillStyle = '#ff8cb3';
-      ctx.beginPath(); ctx.ellipse(256, 360, 34, 46, 0, 0, Math.PI*2); ctx.fill();
-      ctx.lineWidth = 10; ctx.strokeStyle = color;
-      ctx.beginPath(); ctx.ellipse(256, 360, 34, 46, 0, 0, Math.PI*2); ctx.stroke();
-      // mouth open behind tongue
-      ctx.fillStyle = '#3a0f1f';
-      ctx.beginPath(); ctx.ellipse(256, 332, 48, 38, 0, 0, Math.PI*2); ctx.fill();
+    /* puffed cheeks */
+    if(ex.id === 'puff'){
+      ctx.lineWidth = 10;
+      for(const s of [-1,1]){
+        ctx.beginPath(); ctx.ellipse(256 + s*130, 300, 42, 54, 0, 0, Math.PI*2); ctx.stroke();
+      }
     }
     /* mouth */
     ctx.lineWidth = 16;
@@ -1647,13 +1878,20 @@ const FaceGate = (function(){
       ctx.beginPath(); ctx.ellipse(256, 332, 26, 34, 0, 0, Math.PI*2); ctx.fill();
       ctx.lineWidth = 10;
       ctx.beginPath(); ctx.ellipse(256, 332, 48, 52, 0, 0, Math.PI*2); ctx.stroke();
-    } else if(ex.id === 'tongue'){
-      // mouth slightly open + tongue (already drawn above)
-      ctx.lineWidth = 14;
-      ctx.beginPath(); ctx.moveTo(210, 332); ctx.quadraticCurveTo(256, 352, 302, 332); ctx.stroke();
+    } else if(ex.id === 'frown'){
+      ctx.beginPath(); ctx.arc(256, 400, 95, 1.18*Math.PI, 1.82*Math.PI); ctx.stroke();
+    } else if(ex.id === 'puff'){
+      ctx.beginPath(); ctx.ellipse(256, 338, 40, 22, 0, 0, Math.PI*2); ctx.stroke();
+    } else if(ex.id === 'sideL' || ex.id === 'sideR'){
+      const dir = ex.id === 'sideL' ? -1 : 1;
+      ctx.beginPath();
+      ctx.moveTo(256 - 70*1, 348);
+      ctx.quadraticCurveTo(256 + dir*40, 322 + dir*0, 256 + 70, 330 - dir*24);
+      ctx.stroke();
     } else {
       ctx.beginPath(); ctx.moveTo(200, 340); ctx.lineTo(312, 340); ctx.stroke();
     }
+
 
     ctx.restore();
     ctx.font = 'bold 44px Segoe UI, Arial';
@@ -1706,15 +1944,24 @@ const FaceGate = (function(){
     ctx.strokeStyle = '#ff6fd8'; ctx.fillStyle = '#ff6fd8'; ctx.lineWidth = 8; ctx.lineCap = 'round';
     ctx.beginPath(); ctx.ellipse(128,125,78,92,0,0,Math.PI*2); ctx.stroke();
     for(const s of [-1,1]){
-      if(exId === 'squint'){ ctx.beginPath(); ctx.moveTo(128+s*46,112); ctx.lineTo(128+s*18,112); ctx.stroke(); }
+      const winkClosed = exId === 'wink' && s === 1;
+      if(exId === 'squint' || winkClosed){ ctx.beginPath(); ctx.moveTo(128+s*46,112); ctx.lineTo(128+s*18,112); ctx.stroke(); }
       else { ctx.beginPath(); ctx.ellipse(128+s*32,112,11, exId==='brows'?15:10,0,0,Math.PI*2); ctx.fill(); }
       ctx.beginPath(); ctx.moveTo(128+s*48, exId==='brows'?70:84); ctx.lineTo(128+s*18, (exId==='brows'?62:76)); ctx.stroke();
     }
-    if(exId === 'tongue'){ ctx.fillStyle='#ff8cb3'; ctx.beginPath(); ctx.ellipse(128,188,18,24,0,0,Math.PI*2); ctx.fill(); ctx.strokeStyle='#ff6fd8'; ctx.beginPath(); ctx.ellipse(128,188,18,24,0,0,Math.PI*2); ctx.stroke(); }
+    if(exId === 'puff'){
+      for(const s of [-1,1]){ ctx.beginPath(); ctx.ellipse(128+s*66,152,20,26,0,0,Math.PI*2); ctx.stroke(); }
+    }
     if(exId === 'open'){ ctx.beginPath(); ctx.ellipse(128,168,26,33,0,0,Math.PI*2); ctx.fill(); }
     else if(exId === 'smile'){ ctx.beginPath(); ctx.arc(128,150,46,0.18*Math.PI,0.82*Math.PI); ctx.stroke(); }
     else if(exId === 'pucker'){ ctx.beginPath(); ctx.ellipse(128,168,13,17,0,0,Math.PI*2); ctx.fill(); }
+    else if(exId === 'frown'){ ctx.beginPath(); ctx.arc(128,204,46,1.18*Math.PI,1.82*Math.PI); ctx.stroke(); }
+    else if(exId === 'sideL' || exId === 'sideR'){
+      const dir = exId === 'sideL' ? -1 : 1;
+      ctx.beginPath(); ctx.moveTo(100,178); ctx.quadraticCurveTo(128+dir*20,164,156,170-dir*12); ctx.stroke();
+    }
     else { ctx.beginPath(); ctx.moveTo(100,172); ctx.lineTo(156,172); ctx.stroke(); }
+
 
     rivalTex.needsUpdate = true;
   }
@@ -1736,11 +1983,13 @@ const FaceGate = (function(){
   /* ---------- state ---------- */
   const TOTAL_GATES = 12;
   let landmarker = null, loading = false, running = false, camStream = null;
-  let score, streak, lives, rivalScore, spawned, speed, avX, shake, flash, flashColor, current, lastVideoTime;
+  let score, streak, bumps, rivalScore, spawned, speed, avX, shake, flash, flashColor, current, lastVideoTime;
+  let bumpT = 0, winner = null, rivalZ = 0;
   let expr = {open:0, smile:0, brows:0, pucker:0, tongue:0, squint:0};
 
   function resetState(){
-    score = 0; streak = 0; lives = 3; rivalScore = 0; spawned = 0;
+    score = 0; streak = 0; bumps = 0; rivalScore = 0; spawned = 0;
+    bumpT = 0; winner = null;
     speed = 34; avX = 0; shake = 0; flash = 0; flashColor = 0x2de0ff;
     current = null; lastVideoTime = -1;
     walls.forEach(w=>{ w.active = false; w.judged = false; w.m.visible = false; });
@@ -1755,7 +2004,7 @@ const FaceGate = (function(){
     targetEl.textContent = current ? (current.ex.emoji + ' ' + current.ex.label) : '—';
     scoreEl.textContent = score;
     streakEl.textContent = streak;
-    livesEl.textContent = lives;
+    livesEl.textContent = bumps;
     rivalEl.textContent = rivalScore;
   }
 
@@ -1869,11 +2118,12 @@ const FaceGate = (function(){
   function finish(){
     running = false;
     stop();
-    const win = score > rivalScore;
-    const text = lives <= 0 ? ('💥 OUT OF LIVES — ' + score + ' gates') :
-      (win ? ('🏆 YOU WIN ' + score + ' – ' + rivalScore) :
+    const win = winner ? winner === 'you' : score > rivalScore;
+    const text = winner === 'you' ? ('🏁 YOU REACHED THE END FIRST — ' + score + ' – ' + rivalScore) :
+      winner === 'rival' ? ('🤖 RIVAL FINISHED FIRST — ' + rivalScore + ' – ' + score) :
+      (score > rivalScore ? ('🏆 YOU WIN ' + score + ' – ' + rivalScore) :
         (score === rivalScore ? ('🤝 DEAD HEAT ' + score + ' – ' + rivalScore) : ('🤖 RIVAL WINS ' + rivalScore + ' – ' + score)));
-    finishOnline(text, lives <= 0 ? '#ff5f6d' : (win ? '#2de0ff' : '#ffd23f'), 'Play Again', score, win);
+    finishOnline(text, win ? '#2de0ff' : '#ffd23f', 'Play Again', score, win);
   }
 
   function update(dt){
@@ -1893,13 +2143,16 @@ const FaceGate = (function(){
     rivalAv.userData.frame.rotation.z -= dt*1.2;
 
     speed = Math.min(58, speed + dt*1.1);
-    const dz = speed*dt;
-    rings.forEach(g=>{ g.position.z += dz; if(g.position.z > RING_GAP) g.position.z -= TUNNEL_LEN; });
+    /* wrong face = knocked back: the tunnel briefly runs in reverse */
+    bumpT = Math.max(0, bumpT - dt);
+    const dz = bumpT > 0 ? -speed*dt*0.75 : speed*dt;
+    const rivalDz = speed*dt;   // the rival keeps its own pace while you recover
+    rings.forEach(g=>{ g.position.z += dz; if(g.position.z > RING_GAP) g.position.z -= TUNNEL_LEN; if(g.position.z < -TUNNEL_LEN + RING_GAP) g.position.z += TUNNEL_LEN; });
 
     let nearest = null;
     for(const w of walls){
       if(!w.active) continue;
-      w.z += dz;
+      w.z += (w.lane === 0 ? dz : rivalDz);
       w.m.position.z = w.z;
       if(w.lane === 0 && w.z < 0 && (!nearest || w.z > nearest.z)) nearest = w;
 
@@ -1911,9 +2164,17 @@ const FaceGate = (function(){
             w.m.material.color.setHex(0x2de0ff);
             flash = 0.3; flashColor = 0x2de0ff;
           } else {
-            streak = 0; lives--;
+            /* bumped back instead of losing a life — the wall comes around again */
+            streak = 0; bumps++;
             w.m.material.color.setHex(0xff5f6d);
             shake = 0.9; flash = 0.45; flashColor = 0xff5f6d;
+            w.judged = false;
+            w.z -= 30;
+            w.m.position.z = w.z;
+            w.m.material.opacity = 1;
+            speed = Math.max(26, speed - 8);
+            bumpT = 0.45;
+            avX *= 0.4;
           }
         } else {
           /* rival clears most gates, but not all */
@@ -1937,7 +2198,9 @@ const FaceGate = (function(){
     } else if(!walls.some(w=>w.active)){
       finish(); return;
     }
-    if(lives <= 0){ finish(); return; }
+    /* first one to clear every gate wins */
+    if(score >= TOTAL_GATES){ winner = 'you'; finish(); return; }
+    if(rivalScore >= TOTAL_GATES){ winner = 'rival'; finish(); return; }
 
     /* camera: centred so both tunnels read, drifting with the player */
     if(shake > 0) shake = Math.max(0, shake - dt*1.8);
@@ -2034,14 +2297,14 @@ const Sword = (function(){
     grip.position.z = 0.55; pivot.add(grip);
     const guard = new THREE.Mesh(new THREE.BoxGeometry(1.3, 0.22, 0.24), new THREE.MeshLambertMaterial({color:0xffd23f}));
     guard.position.z = 1.15; pivot.add(guard);
-    const blade = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.12, 5.4), new THREE.MeshLambertMaterial({color:bladeColor, emissive:bladeColor, emissiveIntensity:0.35}));
-    blade.position.z = 3.9; pivot.add(blade);
-    const trail = new THREE.Mesh(new THREE.PlaneGeometry(5.2, 1.4),
+    const blade = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.16, 8.0), new THREE.MeshLambertMaterial({color:bladeColor, emissive:bladeColor, emissiveIntensity:0.35}));
+    blade.position.z = 5.2; pivot.add(blade);
+    const trail = new THREE.Mesh(new THREE.PlaneGeometry(7.8, 1.6),
       new THREE.MeshBasicMaterial({color:bladeColor, transparent:true, opacity:0, side:THREE.DoubleSide}));
-    trail.rotation.x = -Math.PI/2; trail.position.set(0, 0, 3.6);
+    trail.rotation.x = -Math.PI/2; trail.position.set(0, 0, 5.0);
     pivot.add(trail);
     scene.add(group);
-    return {group, body, parts, pivot, trail, BLADE_LEN:6.6, color};
+    return {group, body, parts, pivot, trail, BLADE_LEN:9.4, HILT_LEN:1.2, color};
   }
 
   const you = makeFighter(0x2de0ff, 0xd9f4ff);
@@ -2087,6 +2350,8 @@ const Sword = (function(){
   let hitCd = 0, fhitCd = 0, stagger = 0, fstagger = 0, walkT = 0, fwalkT = 0;
   let mouseTarget = new THREE.Vector3(6, 0, 0);
   let lastHitLabel = '—';
+  const DASH_CD = 1.15;
+  let dashCd = 0, dashT = 0, clashFx = 0, parry = 0, fparry = 0;
 
   function resetFighter(f, x, z){
     f.parts.forEach(p=>{
@@ -2108,6 +2373,7 @@ const Sword = (function(){
     angle = 0; fangle = Math.PI; tipSpeed = 0; ftipSpeed = 0; fSwing = 0; fCool = 0.8;
     youHp = MAX_HP; foeHp = MAX_HP;
     hitCd = 0; fhitCd = 0; stagger = 0; fstagger = 0; walkT = 0; fwalkT = 0;
+    dashCd = 0; dashT = 0; clashFx = 0; parry = 0; fparry = 0;
     lastHitLabel = '—';
     resetFighter(you, pos.x, pos.z);
     resetFighter(foe, fpos.x, fpos.z);
@@ -2122,13 +2388,35 @@ const Sword = (function(){
     foeBar.style.width = Math.max(0, foeHp/MAX_HP*100) + '%';
     hitEl.textContent = lastHitLabel;
     const p = Math.min(1, tipSpeed/HARD_TIP);
-    powerEl.textContent = p < 0.25 ? 'light' : p < 0.6 ? 'solid' : p < 0.9 ? 'HARD' : 'BRUTAL';
+    const label = p < 0.25 ? 'light' : p < 0.6 ? 'solid' : p < 0.9 ? 'HARD' : 'BRUTAL';
+    powerEl.textContent = label + (dashCd > 0 ? ' · Q ' + dashCd.toFixed(1) + 's' : ' · Q ready');
   }
 
   function tipOf(f){
     const t = new THREE.Vector3(0, 0, f.BLADE_LEN);
     f.pivot.localToWorld(t);
     return t;
+  }
+  function hiltOf(f){
+    const t = new THREE.Vector3(0, 0, f.HILT_LEN);
+    f.pivot.localToWorld(t);
+    return t;
+  }
+  /* closest points between segments p1->p2 and q1->q2 */
+  function segClosest(p1, p2, q1, q2){
+    const d1 = new THREE.Vector3().subVectors(p2, p1);
+    const d2 = new THREE.Vector3().subVectors(q2, q1);
+    const r = new THREE.Vector3().subVectors(p1, q1);
+    const a = d1.dot(d1), e = d2.dot(d2), f2 = d2.dot(r);
+    const c = d1.dot(r), b = d1.dot(d2);
+    const denom = a*e - b*b;
+    let s = denom > 1e-6 ? Math.max(0, Math.min(1, (b*f2 - c*e)/denom)) : 0;
+    let t = e > 1e-6 ? (b*s + f2)/e : 0;
+    t = Math.max(0, Math.min(1, t));
+    s = a > 1e-6 ? Math.max(0, Math.min(1, (b*t - c)/a)) : 0;
+    const cp = d1.multiplyScalar(s).add(p1);
+    const cq = d2.multiplyScalar(t).add(q1);
+    return { a:cp, b:cq, dist:cp.distanceTo(cq) };
   }
 
   /* ---------- input ---------- */
@@ -2205,9 +2493,19 @@ const Sword = (function(){
     let ax = (keys['d']||keys['arrowright']?1:0) - (keys['a']||keys['arrowleft']?1:0);
     let az = (keys['s']||keys['arrowdown']?1:0) - (keys['w']||keys['arrowup']?1:0);
     const acc = new THREE.Vector3(ax, 0, az);
-    if(acc.lengthSq() > 0) acc.normalize().multiplyScalar(keys[' '] ? 74 : 46);
+    if(acc.lengthSq() > 0) acc.normalize().multiplyScalar(keys[' '] ? 150 : 96);
     vel.addScaledVector(acc, dt);
-    vel.multiplyScalar(Math.pow(0.02, dt));
+    /* dash on Q — burst in the movement direction, or where the blade points */
+    dashCd = Math.max(0, dashCd - dt);
+    dashT = Math.max(0, dashT - dt);
+    if(keys['q'] && dashCd === 0){
+      const dd = (ax || az) ? new THREE.Vector3(ax, 0, az).normalize()
+                            : new THREE.Vector3(Math.sin(angle), 0, Math.cos(angle));
+      vel.addScaledVector(dd, 58);
+      dashCd = DASH_CD; dashT = 0.22;
+      you.trail.material.opacity = 0.6;
+    }
+    vel.multiplyScalar(Math.pow(dashT > 0 ? 0.55 : 0.09, dt));
     pos.addScaledVector(vel, dt);
     walkT += dt * (1 + vel.length()*0.1);
 
@@ -2215,7 +2513,7 @@ const Sword = (function(){
     const toYou = new THREE.Vector3().subVectors(pos, fpos);
     const dist = toYou.length();
     const dir = toYou.clone().normalize();
-    const want = dist > 7.5 ? 1 : dist < 4.6 ? -0.7 : 0.15;
+    const want = dist > 10.5 ? 1 : dist < 6.8 ? -0.7 : 0.15;
     const strafe = new THREE.Vector3(-dir.z, 0, dir.x).multiplyScalar(Math.sin(performance.now()/900)*0.8);
     fvel.addScaledVector(dir.clone().multiplyScalar(want*34).add(strafe.multiplyScalar(18)), dt);
     fvel.multiplyScalar(Math.pow(0.03, dt));
@@ -2244,19 +2542,22 @@ const Sword = (function(){
     let da = aim - angle;
     while(da > Math.PI) da -= Math.PI*2;
     while(da < -Math.PI) da += Math.PI*2;
-    const maxTurn = 15 * dt;             // radians/frame cap → tip speed cap
+    const maxTurn = 21 * dt;             // radians/frame cap → tip speed cap
     angle += Math.max(-maxTurn, Math.min(maxTurn, da));
     you.pivot.rotation.y = angle;
     you.pivot.position.set(0, 2.6 + Math.sin(walkT*9)*0.1, 0);
 
     /* ----- foe blade: winds up then swings through ----- */
     fCool -= dt;
-    if(fCool <= 0 && dist < 8.5 && fSwing === 0){ fSwing = 1; fCool = 1.1 + Math.random()*0.9; }
+    if(fCool <= 0 && dist < 11.5 && fSwing === 0){ fSwing = 1; fCool = 1.1 + Math.random()*0.9; }
     const faim = Math.atan2(pos.x - fpos.x, pos.z - fpos.z);
     if(fSwing > 0){
       fSwing = Math.max(0, fSwing - dt*2.2);
       const arc = (1 - fSwing) * 2.4 - 1.2;
       fangle += (faim + arc - fangle) * Math.min(1, 18*dt);
+    } else if(tipSpeed > HARD_TIP*0.5 && dist < 13){
+      /* incoming hard swing — bring the blade up to meet it */
+      fangle += (faim - fangle) * Math.min(1, 12*dt);
     } else {
       fangle += (faim - 1.2 - fangle) * Math.min(1, 4*dt);
     }
@@ -2281,10 +2582,38 @@ const Sword = (function(){
     you.trail.material.opacity = Math.min(0.55, Math.max(0, (tipSpeed - SOFT_TIP)/HARD_TIP));
     foe.trail.material.opacity = Math.min(0.55, Math.max(0, (ftipSpeed - SOFT_TIP)/HARD_TIP));
 
+    /* ----- blades collide: parry / clash ----- */
+    parry = Math.max(0, parry - dt);
+    fparry = Math.max(0, fparry - dt);
+    clashFx = Math.max(0, clashFx - dt);
+    const cl = segClosest(hiltOf(you), tip, hiltOf(foe), ftip);
+    if(cl.dist < 0.75 && parry === 0 && fparry === 0){
+      const contact = cl.a.clone().lerp(cl.b, 0.5);
+      const mine = Math.max(tipSpeed, 1), theirs = Math.max(ftipSpeed, 1);
+      const total = mine + theirs;
+      /* the slower blade gets deflected further */
+      const kick = 0.55 + Math.min(1, total/(HARD_TIP*2))*0.9;
+      angle -= Math.sign(da || 1) * kick * (theirs/total);
+      fangle += kick * (mine/total);
+      fSwing = 0; fCool = Math.max(fCool, 0.45);
+      parry = 0.26; fparry = 0.26;
+      hitCd = Math.max(hitCd, 0.2); fhitCd = Math.max(fhitCd, 0.2);
+      clashFx = 0.16;
+      you.pivot.rotation.y = angle; foe.pivot.rotation.y = fangle;
+      spawnDebris(contact, 0xfff2b0, Math.min(1, total/(HARD_TIP*1.6)));
+      /* both fighters get shoved apart by the impact */
+      const sep = new THREE.Vector3().subVectors(pos, fpos).setY(0).normalize();
+      vel.addScaledVector(sep, 4 + mine*0.12);
+      fvel.addScaledVector(sep, -(4 + theirs*0.12));
+      lastHitLabel = 'CLANG! blades locked';
+      you.trail.material.opacity = 0.5; foe.trail.material.opacity = 0.5;
+    }
+    const clashing = parry > 0 || fparry > 0;
+
     /* ----- resolve strikes ----- */
     hitCd = Math.max(0, hitCd - dt);
     fhitCd = Math.max(0, fhitCd - dt);
-    if(hitCd === 0){
+    if(hitCd === 0 && !clashing){
       const power = Math.max(0, Math.min(1, (tipSpeed - SOFT_TIP)/(HARD_TIP - SOFT_TIP)));
       const d = damage(foe, tip, power, true);
       if(d > 0){
@@ -2295,7 +2624,7 @@ const Sword = (function(){
         hitCd = 0.14;
       }
     }
-    if(fhitCd === 0 && fSwing > 0){
+    if(fhitCd === 0 && fSwing > 0 && !clashing){
       const power = Math.max(0, Math.min(1, (ftipSpeed - SOFT_TIP)/(HARD_TIP - SOFT_TIP)));
       const d = damage(you, ftip, power, false);
       if(d > 0){
