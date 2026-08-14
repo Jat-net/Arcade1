@@ -115,8 +115,15 @@
 .modeBtn{padding:10px 22px;border-radius:24px;border:none;background:transparent;color:#9fb3d9;font-weight:600;cursor:pointer;}
 .modeBtn.active{background:rgba(255,255,255,.12);color:#fff;}
 #onlinePanel{display:flex;flex-direction:column;gap:12px;width:100%;}
-#nameRow{display:flex;align-items:center;gap:10px;justify-content:center;}
-#nameRow input{background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.2);color:#fff;padding:8px 12px;border-radius:8px;font-size:15px;}
+#authPanel{display:flex;flex-direction:column;gap:12px;width:100%;align-items:center;}
+#authTabs{display:flex;gap:10px;background:rgba(255,255,255,.06);padding:6px;border-radius:24px;}
+.authTab{padding:8px 18px;border-radius:20px;border:none;background:transparent;color:#9fb3d9;font-weight:600;cursor:pointer;font-size:13px;}
+.authTab.active{background:rgba(255,255,255,.12);color:#fff;}
+#authFields{display:flex;flex-direction:column;gap:10px;width:100%;max-width:280px;}
+#authFields input{background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.2);color:#fff;padding:10px 12px;border-radius:8px;font-size:15px;width:100%;box-sizing:border-box;}
+#authError{color:#ff5f6d;font-size:13px;min-height:16px;text-align:center;}
+#loggedInAs{display:flex;align-items:center;gap:10px;justify-content:center;font-size:14px;color:#9fb3d9;}
+#loggedInAs b{color:#fff;}
 .joinRow{display:flex;gap:8px;justify-content:center;}
 #roomCodeInput{width:80px;text-align:center;text-transform:uppercase;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.2);color:#fff;padding:8px 12px;border-radius:8px;font-size:15px;}
 #roomPlayers{display:flex;flex-direction:column;gap:6px;width:100%;}
@@ -126,7 +133,17 @@
 </style>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-<script src="firebase-config.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyASj7SfHUMxPsPyPF3t_3vi4X6kJnYCz_M",
+  authDomain: "arcade-3dc6c.firebaseapp.com",
+  projectId: "arcade-3dc6c",
+  storageBucket: "arcade-3dc6c.firebasestorage.app",
+  messagingSenderId: "715821538041",
+  appId: "1:715821538041:web:0db2ce7ee50a223fc1e028"
+};
+</script>
 </head>
 <body>
 
@@ -234,17 +251,32 @@
   </div>
   <div id="cpuPanel"><button class="bigBtn" id="lobbyCpuBtn">Start Game</button></div>
   <div id="onlinePanel" class="hidden">
-    <div id="nameRow"><label>Your name</label><input type="text" id="lobbyName" maxlength="16" placeholder="Enter name"></div>
-    <div id="onlineActions">
-      <button class="bigBtn" id="createRoomBtn">Create Room</button>
-      <div class="joinRow"><input type="text" id="roomCodeInput" maxlength="4" placeholder="CODE"><button class="ghostBtn" id="joinRoomBtn">Join</button></div>
-      <button class="ghostBtn" id="quickMatchBtn">Quick Match</button>
+    <div id="authPanel">
+      <div id="authTabs">
+        <button class="authTab active" data-authmode="signin" type="button">Sign In</button>
+        <button class="authTab" data-authmode="signup" type="button">Create Account</button>
+      </div>
+      <div id="authFields">
+        <input type="text" id="authDisplayName" maxlength="16" placeholder="Display name" class="hidden" autocomplete="nickname">
+        <input type="email" id="authEmail" placeholder="Email" autocomplete="email">
+        <input type="password" id="authPassword" placeholder="Password" autocomplete="current-password">
+        <button class="bigBtn" id="authSubmitBtn" type="button">Sign In</button>
+        <div id="authError"></div>
+      </div>
     </div>
-    <div id="roomPanel" class="hidden">
-      <div id="roomCodeDisplay">ROOM: <b>----</b></div>
-      <div id="roomPlayers"></div>
-      <button class="bigBtn hidden" id="startMatchBtn">Start Match</button>
-      <div id="waitingMsg">Waiting for host...</div>
+    <div id="loggedInPanel" class="hidden">
+      <div id="loggedInAs">Signed in as <b id="loggedInName"></b><button class="ghostBtn" id="logoutBtn" type="button">Log out</button></div>
+      <div id="onlineActions">
+        <button class="bigBtn" id="createRoomBtn">Create Room</button>
+        <div class="joinRow"><input type="text" id="roomCodeInput" maxlength="4" placeholder="CODE"><button class="ghostBtn" id="joinRoomBtn">Join</button></div>
+        <button class="ghostBtn" id="quickMatchBtn">Quick Match</button>
+      </div>
+      <div id="roomPanel" class="hidden">
+        <div id="roomCodeDisplay">ROOM: <b>----</b></div>
+        <div id="roomPlayers"></div>
+        <button class="bigBtn hidden" id="startMatchBtn">Start Match</button>
+        <div id="waitingMsg">Waiting for host...</div>
+      </div>
     </div>
   </div>
   <div id="lobbyCounts">Players online: <b id="totalOnline">-</b> · In this game: <b id="gameOnline">-</b></div>
@@ -2725,7 +2757,16 @@ const onlinePanel = document.getElementById('onlinePanel');
 const onlineActions = document.getElementById('onlineActions');
 const roomPanel = document.getElementById('roomPanel');
 const lobbyCpuBtn = document.getElementById('lobbyCpuBtn');
-const lobbyName = document.getElementById('lobbyName');
+const authPanel = document.getElementById('authPanel');
+const authTabs = document.getElementById('authTabs');
+const authDisplayName = document.getElementById('authDisplayName');
+const authEmail = document.getElementById('authEmail');
+const authPassword = document.getElementById('authPassword');
+const authSubmitBtn = document.getElementById('authSubmitBtn');
+const authError = document.getElementById('authError');
+const loggedInPanel = document.getElementById('loggedInPanel');
+const loggedInName = document.getElementById('loggedInName');
+const logoutBtn = document.getElementById('logoutBtn');
 const createRoomBtn = document.getElementById('createRoomBtn');
 const roomCodeInput = document.getElementById('roomCodeInput');
 const joinRoomBtn = document.getElementById('joinRoomBtn');
@@ -2740,26 +2781,64 @@ const gameOnlineEl = document.getElementById('gameOnline');
 
 /* ---------- Network module ---------- */
 const Network = (function(){
-  let app = null, db = null, configured = false;
-  let sessionId = localStorage.getItem('asg_sessionId');
-  let name = localStorage.getItem('asg_name');
+  let app = null, db = null, auth = null, configured = false;
+  let sessionId = null, name = null;
   let roomRef = null, matchRef = null;
   let roomUnsub = null, matchUnsub = null;
   let presenceRef = null, presenceInterval = null;
+  let authListeners = [];
 
   function init(){
     if(typeof firebase === 'undefined' || typeof firebaseConfig === 'undefined' || !firebaseConfig.projectId){
       configured = false; return false;
     }
-    try { app = firebase.initializeApp(firebaseConfig); db = firebase.firestore(app); configured = true; }
+    try {
+      app = firebase.initializeApp(firebaseConfig);
+      db = firebase.firestore(app);
+      auth = firebase.auth(app);
+      configured = true;
+      auth.onAuthStateChanged(user=>{
+        if(user){ sessionId = user.uid; name = (user.displayName||'Player').slice(0,16); }
+        else { sessionId = null; name = null; }
+        authListeners.forEach(cb=>cb(user));
+      });
+    }
     catch(e){ configured = false; }
     return configured;
   }
 
+  function onAuthChange(cb){ authListeners.push(cb); }
+  function currentUser(){ return auth ? auth.currentUser : null; }
+
+  async function signUp(email, password, displayName){
+    if(!auth) throw new Error('Firebase not configured');
+    displayName = (displayName||'').trim().slice(0,16);
+    if(!displayName) throw new Error('Enter a display name');
+    const cred = await auth.createUserWithEmailAndPassword(email, password);
+    await cred.user.updateProfile({displayName});
+    sessionId = cred.user.uid; name = displayName;
+    return cred.user;
+  }
+
+  async function signIn(email, password){
+    if(!auth) throw new Error('Firebase not configured');
+    const cred = await auth.signInWithEmailAndPassword(email, password);
+    sessionId = cred.user.uid; name = (cred.user.displayName||'Player').slice(0,16);
+    return cred.user;
+  }
+
+  async function signOutUser(){
+    if(!auth) return;
+    await leaveRoom();
+    stopPresence();
+    await auth.signOut();
+  }
+
   function ensureIdentity(){
-    if(!name){ name = (prompt('Choose a display name:')||'Player').trim().slice(0,16)||'Player'; localStorage.setItem('asg_name', name); }
-    if(!sessionId){ sessionId = Math.random().toString(36).slice(2)+Date.now().toString(36); localStorage.setItem('asg_sessionId', sessionId); }
-    lobbyName.value = name;
+    const user = currentUser();
+    if(!user) throw new Error('Not signed in');
+    sessionId = user.uid;
+    name = (user.displayName||'Player').slice(0,16);
     return {name, sessionId};
   }
 
@@ -2804,11 +2883,13 @@ const Network = (function(){
 
   async function createRoom(game){
     if(!db) throw new Error('Firebase not configured');
+    if(!sessionId) throw new Error('Not signed in');
     const code = generateCode();
     roomRef = db.collection('rooms').doc(code);
     await roomRef.set({
       game, host: sessionId, hostName: name,
       players: [{sessionId, name, ready:false}],
+      playerIds: [sessionId],
       status:'waiting', createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       heartbeat: firebase.firestore.FieldValue.serverTimestamp()
     });
@@ -2816,6 +2897,7 @@ const Network = (function(){
   }
 
   async function joinRoom(code){
+    if(!sessionId) throw new Error('Not signed in');
     code = (code||'').toUpperCase().trim();
     if(!code || code.length!==4) throw new Error('Enter a 4-letter room code');
     roomRef = db.collection('rooms').doc(code);
@@ -2826,6 +2908,7 @@ const Network = (function(){
     if((data.players||[]).length >= maxPlayers(data.game)) throw new Error('Room full');
     await roomRef.update({
       players: firebase.firestore.FieldValue.arrayUnion({sessionId, name, ready:false}),
+      playerIds: firebase.firestore.FieldValue.arrayUnion(sessionId),
       heartbeat: firebase.firestore.FieldValue.serverTimestamp()
     });
     return {code, isHost: data.host === sessionId};
@@ -2833,10 +2916,18 @@ const Network = (function(){
 
   async function quickMatch(game){
     if(!db) throw new Error('Firebase not configured');
+    // No orderBy here on purpose: a two-field where() + orderBy() needs a
+    // composite index in Firestore. We fetch by the two where()s (each of
+    // which gets an automatic single-field index) and sort client-side.
     const snap = await db.collection('rooms')
       .where('game','==',game).where('status','==','waiting')
-      .orderBy('createdAt','asc').limit(20).get();
-    for(const doc of snap.docs){
+      .limit(20).get();
+    const docs = snap.docs.slice().sort((a,b)=>{
+      const ta = a.data().createdAt ? a.data().createdAt.toMillis() : 0;
+      const tb = b.data().createdAt ? b.data().createdAt.toMillis() : 0;
+      return ta - tb;
+    });
+    for(const doc of docs){
       const data = doc.data();
       if((data.players||[]).length < maxPlayers(data.game)) return joinRoom(doc.id);
     }
@@ -2892,10 +2983,11 @@ const Network = (function(){
       if(snap.exists){
         const data = snap.data();
         let players = (data.players||[]).filter(p=>p.sessionId!==sessionId);
+        let playerIds = players.map(p=>p.sessionId);
         let host = data.host, hostName = data.hostName;
         if(host === sessionId && players.length>0){ host = players[0].sessionId; hostName = players[0].name; }
         if(players.length===0){ await roomRef.delete(); }
-        else { await roomRef.update({players, host, hostName, status: data.status==='playing' ? 'finished' : data.status}); }
+        else { await roomRef.update({players, playerIds, host, hostName, status: data.status==='playing' ? 'finished' : data.status}); }
       }
       roomRef = null; matchRef = null;
     }
@@ -2904,7 +2996,8 @@ const Network = (function(){
   return {
     init, configured:()=>configured, ensureIdentity, startPresence, stopPresence, countOnline,
     createRoom, joinRoom, quickMatch, subscribeRoom, startMatch, attachMatch, subscribeMatch, reportScore, leaveRoom,
-    maxPlayers, get sessionId(){return sessionId;}, get name(){return name;}, get roomCode(){return roomRef?roomRef.id:null;}
+    maxPlayers, onAuthChange, currentUser, signUp, signIn, signOut: signOutUser,
+    get sessionId(){return sessionId;}, get name(){return name;}, get roomCode(){return roomRef?roomRef.id:null;}
   };
 })();
 
@@ -2917,7 +3010,6 @@ function showLobby(game){
   selectedGame = game;
   onlineMode = false;
   afterResultGotoLobby = false;
-  Network.ensureIdentity();
   lobbyTitle.textContent = gameNames[game] || game.toUpperCase();
   screen = 'lobby';
   menuScreen.classList.add('hidden');
@@ -2927,10 +3019,13 @@ function showLobby(game){
   overlay.classList.remove('hidden');
   backBtn.classList.add('hidden');
   setLobbyMode('cpu');
+}
+
+function startOnlinePresenceAndCounts(){
   if(onlineCountUnsub){ onlineCountUnsub(); onlineCountUnsub = null; }
-  Network.startPresence(game);
-  if(Network.configured()){
-    onlineCountUnsub = Network.countOnline(game, (total, ingame)=>{ totalOnlineEl.textContent = total; gameOnlineEl.textContent = ingame; });
+  if(Network.configured() && Network.currentUser()){
+    Network.startPresence(selectedGame);
+    onlineCountUnsub = Network.countOnline(selectedGame, (total, ingame)=>{ totalOnlineEl.textContent = total; gameOnlineEl.textContent = ingame; });
   } else {
     totalOnlineEl.textContent = '—'; gameOnlineEl.textContent = '—';
   }
@@ -2941,7 +3036,14 @@ function setLobbyMode(mode){
   Array.from(lobbyModeRow.children).forEach(b=> b.classList.toggle('active', b.dataset.mode===mode));
   cpuPanel.classList.toggle('hidden', mode!=='cpu');
   onlinePanel.classList.toggle('hidden', mode!=='online');
-  if(mode==='online'){ roomPanel.classList.add('hidden'); onlineActions.classList.remove('hidden'); }
+  if(mode==='online'){
+    roomPanel.classList.add('hidden'); onlineActions.classList.remove('hidden');
+    updateAuthUI();
+    startOnlinePresenceAndCounts();
+  } else {
+    Network.stopPresence();
+    if(onlineCountUnsub){ onlineCountUnsub(); onlineCountUnsub = null; }
+  }
 }
 
 lobbyModeRow.addEventListener('click', e=>{
@@ -2956,24 +3058,93 @@ lobbyCpuBtn.addEventListener('click', ()=>{
 });
 
 createRoomBtn.addEventListener('click', async ()=>{
-  if(!Network.configured()){ alert('Firebase not configured yet. Add your firebase-config.js first.'); return; }
-  Network.ensureIdentity();
+  if(!Network.configured()){ alert('Firebase not configured yet.'); return; }
   try { const {code, isHost} = await Network.createRoom(selectedGame); enterRoom(code, isHost); }
   catch(e){ alert(e.message); }
 });
 
 joinRoomBtn.addEventListener('click', async ()=>{
   if(!Network.configured()){ alert('Firebase not configured yet.'); return; }
-  Network.ensureIdentity();
   try { const {code, isHost} = await Network.joinRoom(roomCodeInput.value); enterRoom(code, isHost); }
   catch(e){ alert(e.message); }
 });
 
 quickMatchBtn.addEventListener('click', async ()=>{
   if(!Network.configured()){ alert('Firebase not configured yet.'); return; }
-  Network.ensureIdentity();
   try { const {code, isHost} = await Network.quickMatch(selectedGame); enterRoom(code, isHost); }
   catch(e){ alert(e.message); }
+});
+
+/* ---------- auth (login/signup) wiring ---------- */
+let authMode = 'signin';
+
+function updateAuthUI(){
+  const user = Network.currentUser();
+  if(user){
+    authPanel.classList.add('hidden');
+    loggedInPanel.classList.remove('hidden');
+    loggedInName.textContent = (user.displayName||'Player').slice(0,16);
+  } else {
+    authPanel.classList.remove('hidden');
+    loggedInPanel.classList.add('hidden');
+  }
+}
+
+function setAuthMode(mode){
+  authMode = mode;
+  Array.from(authTabs.children).forEach(b=> b.classList.toggle('active', b.dataset.authmode===mode));
+  authDisplayName.classList.toggle('hidden', mode!=='signup');
+  authSubmitBtn.textContent = mode==='signup' ? 'Create Account' : 'Sign In';
+  authError.textContent = '';
+}
+
+authTabs.addEventListener('click', e=>{
+  if(e.target.classList.contains('authTab')) setAuthMode(e.target.dataset.authmode);
+});
+
+authSubmitBtn.addEventListener('click', async ()=>{
+  if(!Network.configured()){ authError.textContent = 'Firebase not configured yet.'; return; }
+  const email = authEmail.value.trim();
+  const password = authPassword.value;
+  authError.textContent = '';
+  authSubmitBtn.disabled = true;
+  try {
+    if(authMode === 'signup'){
+      await Network.signUp(email, password, authDisplayName.value);
+    } else {
+      await Network.signIn(email, password);
+    }
+    authEmail.value = ''; authPassword.value = ''; authDisplayName.value = '';
+    updateAuthUI();
+    startOnlinePresenceAndCounts();
+  } catch(e){
+    authError.textContent = friendlyAuthError(e);
+  } finally {
+    authSubmitBtn.disabled = false;
+  }
+});
+
+function friendlyAuthError(e){
+  const code = e && e.code || '';
+  if(code === 'auth/email-already-in-use') return 'That email is already registered — try Sign In instead.';
+  if(code === 'auth/invalid-email') return 'That email address looks invalid.';
+  if(code === 'auth/weak-password') return 'Password should be at least 6 characters.';
+  if(code === 'auth/wrong-password' || code === 'auth/user-not-found' || code === 'auth/invalid-credential') return 'Incorrect email or password.';
+  if(code === 'auth/too-many-requests') return 'Too many attempts. Try again in a bit.';
+  return e && e.message ? e.message : 'Something went wrong. Try again.';
+}
+
+logoutBtn.addEventListener('click', async ()=>{
+  await Network.signOut();
+  onlineActions.classList.remove('hidden');
+  roomPanel.classList.add('hidden');
+  updateAuthUI();
+  if(onlineCountUnsub){ onlineCountUnsub(); onlineCountUnsub = null; }
+  totalOnlineEl.textContent = '—'; gameOnlineEl.textContent = '—';
+});
+
+Network.onAuthChange(()=>{
+  if(!lobbyScreen.classList.contains('hidden') && lobbyMode==='online'){ updateAuthUI(); }
 });
 
 function enterRoom(code, isHost){
