@@ -336,6 +336,7 @@ function showMenu(){
   menuScreen.classList.remove('hidden');
   gameIntro.classList.add('hidden');
   resultWrap.classList.add('hidden');
+  lobbyScreen.classList.add('hidden');
   backBtn.classList.add('hidden');
   hideAllHuds();
   if(window.FaceGate) FaceGate.stop();
@@ -1847,7 +1848,6 @@ const FaceGate = (function(){
     {id:'pucker', label:'KISS FACE',   emoji:'😗'},
     {id:'squint', label:'SQUINT',      emoji:'😑'},
     {id:'frown',  label:'BIG FROWN',   emoji:'🙁'},
-    {id:'puff',   label:'PUFF CHEEKS', emoji:'😤'},
     {id:'wink',   label:'WINK',        emoji:'😉'},
   ];
 
@@ -1889,13 +1889,6 @@ const FaceGate = (function(){
         ctx.beginPath(); ctx.ellipse(256 + s*65, 225, 22, ex.id==='brows'?28:20, 0, 0, Math.PI*2); ctx.fill();
       }
     }
-    /* puffed cheeks */
-    if(ex.id === 'puff'){
-      ctx.lineWidth = 10;
-      for(const s of [-1,1]){
-        ctx.beginPath(); ctx.ellipse(256 + s*130, 300, 42, 54, 0, 0, Math.PI*2); ctx.stroke();
-      }
-    }
     /* mouth */
     ctx.lineWidth = 16;
     if(ex.id === 'open'){
@@ -1910,8 +1903,6 @@ const FaceGate = (function(){
       ctx.beginPath(); ctx.ellipse(256, 332, 48, 52, 0, 0, Math.PI*2); ctx.stroke();
     } else if(ex.id === 'frown'){
       ctx.beginPath(); ctx.arc(256, 400, 95, 1.18*Math.PI, 1.82*Math.PI); ctx.stroke();
-    } else if(ex.id === 'puff'){
-      ctx.beginPath(); ctx.ellipse(256, 338, 40, 22, 0, 0, Math.PI*2); ctx.stroke();
     } else if(ex.id === 'sideL' || ex.id === 'sideR'){
       const dir = ex.id === 'sideL' ? -1 : 1;
       ctx.beginPath();
@@ -1979,9 +1970,6 @@ const FaceGate = (function(){
       else { ctx.beginPath(); ctx.ellipse(128+s*32,112,11, exId==='brows'?15:10,0,0,Math.PI*2); ctx.fill(); }
       ctx.beginPath(); ctx.moveTo(128+s*48, exId==='brows'?70:84); ctx.lineTo(128+s*18, (exId==='brows'?62:76)); ctx.stroke();
     }
-    if(exId === 'puff'){
-      for(const s of [-1,1]){ ctx.beginPath(); ctx.ellipse(128+s*66,152,20,26,0,0,Math.PI*2); ctx.stroke(); }
-    }
     if(exId === 'open'){ ctx.beginPath(); ctx.ellipse(128,168,26,33,0,0,Math.PI*2); ctx.fill(); }
     else if(exId === 'smile'){ ctx.beginPath(); ctx.arc(128,150,46,0.18*Math.PI,0.82*Math.PI); ctx.stroke(); }
     else if(exId === 'pucker'){ ctx.beginPath(); ctx.ellipse(128,168,13,17,0,0,Math.PI*2); ctx.fill(); }
@@ -2015,7 +2003,7 @@ const FaceGate = (function(){
   let landmarker = null, loading = false, running = false, camStream = null;
   let score, streak, bumps, rivalScore, spawned, speed, avX, shake, flash, flashColor, current, lastVideoTime;
   let bumpT = 0, winner = null, rivalZ = 0;
-  let expr = {open:0, smile:0, brows:0, pucker:0, tongue:0, squint:0};
+  let expr = {open:0, smile:0, brows:0, pucker:0, tongue:0, squint:0, frown:0, blinkL:0, blinkR:0};
 
   function resetState(){
     score = 0; streak = 0; bumps = 0; rivalScore = 0; spawned = 0;
@@ -2108,6 +2096,9 @@ const FaceGate = (function(){
     expr.squint = avg('eyeSquintLeft','eyeSquintRight');
     expr.pucker = v['mouthPucker'] || 0;
     expr.tongue = v['tongueOut'] || 0;
+    expr.frown  = avg('mouthFrownLeft','mouthFrownRight');
+    expr.blinkL = v['eyeBlinkLeft'] || 0;
+    expr.blinkR = v['eyeBlinkRight'] || 0;
     // Fallback for devices without tongueOut: mouth open + jaw forward + lower lip drop
     if(expr.tongue < 0.05){
       const jawFwd = v['jawForward'] || 0;
@@ -2125,6 +2116,8 @@ const FaceGate = (function(){
     if(exId === 'squint') return expr.squint > 0.4 && expr.open < 0.3;
     if(exId === 'pucker') return expr.pucker > 0.5 && expr.smile < 0.35;
     if(exId === 'tongue') return expr.tongue > 0.35;
+    if(exId === 'frown')  return expr.frown > 0.35 && expr.smile < 0.2;
+    if(exId === 'wink')   return (expr.blinkL > 0.5 && expr.blinkR < 0.25) || (expr.blinkR > 0.5 && expr.blinkL < 0.25);
     return false;
   }
 
@@ -3172,6 +3165,7 @@ startMatchBtn.addEventListener('click', async ()=>{
 
 function startOnlineMatch(code){
   onlineMode = true;
+  activeGame = selectedGame;
   lobbyScreen.classList.add('hidden');
   overlay.classList.add('hidden');
   screen = 'playing';
