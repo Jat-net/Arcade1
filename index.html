@@ -1235,7 +1235,11 @@ const Hockey = (function(){
         cpuVel.z = ((r.z ?? cpuPos.z) - cpuPos.z) / Math.max(dt,0.001);
         cpuPos.x += (r.x - cpuPos.x) * Math.min(1, dt*18);
         cpuPos.z += (r.z - cpuPos.z) * Math.min(1, dt*18);
-      } else updateCPU(dt);
+      } else {
+        // Never fall back to CPU logic during an online match.
+        cpuVel.x = 0;
+        cpuVel.z = 0;
+      }
     } else {
       updateCPU(dt);
     }
@@ -3046,14 +3050,34 @@ const Network = (function(){
   }
 
   async function startMatch(){
-    if(!roomRef) return;
-    await roomRef.update({status:'playing', startedAt: firebase.firestore.FieldValue.serverTimestamp()});
+    if(!roomRef || !sessionId) return;
+    // Create the match BEFORE marking the room as playing. This removes the
+    // race where a guest entered the game before /matches/{code} existed.
     const snap = await roomRef.get();
+    if(!snap.exists) throw new Error('Room no longer exists');
     const data = snap.data();
+    if(data.host !== sessionId) throw new Error('Only the host can start the match');
+
     matchRef = db.collection('matches').doc(roomRef.id);
     const players = {};
-    (data.players||[]).forEach(p=>{ players[p.sessionId] = {name:p.name, score:0, status:'playing', finished:false, state:null}; });
-    await matchRef.set({game:data.game, status:'playing', players, updatedAt: firebase.firestore.FieldValue.serverTimestamp()});
+    (data.players||[]).forEach(p=>{
+      players[p.sessionId] = {
+        name:p.name, score:0, status:'playing', finished:false, state:null
+      };
+    });
+
+    await matchRef.set({
+      game:data.game,
+      status:'playing',
+      players,
+      updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    await roomRef.update({
+      status:'playing',
+      startedAt:firebase.firestore.FieldValue.serverTimestamp(),
+      heartbeat:firebase.firestore.FieldValue.serverTimestamp()
+    });
   }
 
   function attachMatch(code){
@@ -3080,17 +3104,25 @@ const Network = (function(){
     pendingState = state;
     const now = performance.now();
     if(stateWriteBusy || now - lastStateWrite < 100) return;
+
     stateWriteBusy = true;
     lastStateWrite = now;
-    const send = pendingState; pendingState = null;
+    const send = pendingState;
+    pendingState = null;
     try {
       await matchRef.update({
         ['players.'+sessionId+'.state']: send,
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       });
-    } catch(e) {}
+      lastStateWrite = performance.now();
+    } catch(e) {
+      console.error('[ONLINE] state sync failed:', e);
+      pendingState = send;
+    }
     stateWriteBusy = false;
-    if(pendingState && performance.now() - lastStateWrite >= 100) publishState(pendingState);
+    if(pendingState && performance.now() - lastStateWrite >= 100){
+      publishState(pendingState);
+    }
   }
 
   function setRemoteStates(players){
@@ -3299,7 +3331,11 @@ startMatchBtn.addEventListener('click', async ()=>{
   await Network.startMatch();
 });
 
+let onlineMatchStartedCode = null;
+
 function startOnlineMatch(code){
+  if(onlineMatchStartedCode === code && onlineMode && screen === 'playing') return;
+  onlineMatchStartedCode = code;
   onlineMode = true;
   activeGame = selectedGame;
   lobbyScreen.classList.add('hidden');
@@ -3320,6 +3356,7 @@ function onMatchUpdate(data){
   const players = data.players || {};
   Network.setRemoteStates(players);
   const entries = Object.entries(players);
+  if(entries.length < 2) return;
   const allFinished = entries.every(e=>e[1].finished);
   if(!allFinished) return;
   const game = data.game;
@@ -3357,6 +3394,7 @@ lobbyBackBtn.addEventListener('click', async ()=>{
 const originalShowMenu = showMenu;
 showMenu = function(){
   onlineMode = false;
+  onlineMatchStartedCode = null;
   afterResultGotoLobby = false;
   if(onlineCountUnsub){ onlineCountUnsub(); onlineCountUnsub = null; }
   Network.leaveRoom();
