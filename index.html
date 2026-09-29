@@ -2887,8 +2887,9 @@ const gameOnlineEl = document.getElementById('gameOnline');
 const Network = (function(){
   let app = null, db = null, auth = null, configured = false;
   let sessionId = null, name = null;
-  let roomRef = null, matchRef = null;
-  let roomUnsub = null, matchUnsub = null;
+  let roomRef = null, matchRef = null, stateRef = null;
+  let remoteStates = {};
+  let roomUnsub = null, matchUnsub = null, stateUnsub = null;
   let presenceRef = null, presenceInterval = null;
   let authListeners = [];
 
@@ -3083,6 +3084,7 @@ const Network = (function(){
   function attachMatch(code){
     if(!db) return;
     matchRef = db.collection('matches').doc(code);
+    stateRef = matchRef.collection('state');
   }
 
   function subscribeMatch(cb){
@@ -3092,6 +3094,22 @@ const Network = (function(){
       if(!snap.exists){ cb(null); return; }
       cb(snap.data());
     });
+
+    // Live movement gets its own document per player. This avoids competing
+    // writes to the match/result document.
+    if(stateRef){
+      if(stateUnsub){ stateUnsub(); stateUnsub = null; }
+      stateUnsub = stateRef.onSnapshot(snap=>{
+        const states = {};
+        snap.forEach(doc=>{
+          if(doc.id !== sessionId){
+            const d = doc.data();
+            if(d && d.state) states[doc.id] = d.state;
+          }
+        });
+        remoteStates = states;
+      });
+    }
   }
 
   async function reportScore(score, statusText){
@@ -3100,7 +3118,7 @@ const Network = (function(){
   }
 
   async function publishState(state){
-    if(!matchRef || !sessionId || !state) return;
+    if(!stateRef || !sessionId || !state) return;
     pendingState = state;
     const now = performance.now();
     if(stateWriteBusy || now - lastStateWrite < 100) return;
@@ -3109,16 +3127,18 @@ const Network = (function(){
     lastStateWrite = now;
     const send = pendingState;
     pendingState = null;
+
     try {
-      await matchRef.update({
-        ['players.'+sessionId+'.state']: send,
+      await stateRef.doc(sessionId).set({
+        state: send,
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
+      }, {merge:true});
       lastStateWrite = performance.now();
     } catch(e) {
-      console.error('[ONLINE] state sync failed:', e);
+      console.error('[ONLINE] live state sync failed:', e);
       pendingState = send;
     }
+
     stateWriteBusy = false;
     if(pendingState && performance.now() - lastStateWrite >= 100){
       publishState(pendingState);
@@ -3139,6 +3159,7 @@ const Network = (function(){
   async function leaveRoom(){
     if(roomUnsub){ roomUnsub(); roomUnsub = null; }
     if(matchUnsub){ matchUnsub(); matchUnsub = null; }
+    if(stateUnsub){ stateUnsub(); stateUnsub = null; }
     if(roomRef){
       const snap = await roomRef.get();
       if(snap.exists){
@@ -3150,7 +3171,7 @@ const Network = (function(){
         if(players.length===0){ await roomRef.delete(); }
         else { await roomRef.update({players, playerIds, host, hostName, status: data.status==='playing' ? 'finished' : data.status}); }
       }
-      roomRef = null; matchRef = null; remoteStates = {};
+      roomRef = null; matchRef = null; stateRef = null; remoteStates = {};
     }
   }
 
