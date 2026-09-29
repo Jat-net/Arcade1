@@ -761,7 +761,28 @@ const Carts = (function(){
         }
       }
     } else {
-      updateAI(cart, dt);
+      if(onlineMode){
+        // In online matches this cart represents a real remote player.
+        // The remote player's client owns its movement; we only interpolate
+        // the state received from Firebase instead of running the CPU AI.
+        const remotes = Object.values(Network.getRemoteStates ? Network.getRemoteStates() : {});
+        const idx = bots.indexOf(cart);
+        const r = remotes[idx];
+        if(r){
+          cart.x += ((r.x ?? cart.x) - cart.x) * Math.min(1, dt*18);
+          cart.z += ((r.z ?? cart.z) - cart.z) * Math.min(1, dt*18);
+          cart.heading = r.heading ?? cart.heading;
+          cart.vx = r.vx ?? 0; cart.vz = r.vz ?? 0;
+          cart.alive = r.alive !== false;
+          cart.outOfBounds = false;
+          cart.mesh.visible = cart.alive;
+        } else {
+          cart.alive = false;
+          cart.mesh.visible = false;
+        }
+      } else {
+        updateAI(cart, dt);
+      }
     }
 
     cart.vx *= DRAG; cart.vz *= DRAG;
@@ -839,6 +860,12 @@ const Carts = (function(){
     allCarts.forEach(c=>updateCart(c, dt));
     resolveCollisions();
     updateCamera(dt);
+    if(onlineMode && Network.publishState){
+      Network.publishState({
+        x: player.x, z: player.z, heading: player.heading,
+        vx: player.vx, vz: player.vz, alive: player.alive
+      });
+    }
     const aliveCount = allCarts.filter(c=>c.alive).length;
     cartCountEl.textContent = aliveCount;
     arenaSizeEl.textContent = arenaRadius.toFixed(1) + 'm';
@@ -1200,7 +1227,18 @@ const Hockey = (function(){
     const pVelX = (playerPos.x - playerPrevPos.x)/dt;
     const pVelZ = (playerPos.z - playerPrevPos.z)/dt;
 
-    updateCPU(dt);
+    if(onlineMode){
+      const remotes = Object.values(Network.getRemoteStates ? Network.getRemoteStates() : {});
+      const r = remotes[0];
+      if(r){
+        cpuVel.x = ((r.x ?? cpuPos.x) - cpuPos.x) / Math.max(dt,0.001);
+        cpuVel.z = ((r.z ?? cpuPos.z) - cpuPos.z) / Math.max(dt,0.001);
+        cpuPos.x += (r.x - cpuPos.x) * Math.min(1, dt*18);
+        cpuPos.z += (r.z - cpuPos.z) * Math.min(1, dt*18);
+      } else updateCPU(dt);
+    } else {
+      updateCPU(dt);
+    }
     updatePuck(dt);
     paddleCollision(playerPos, pVelX, pVelZ);
     paddleCollision(cpuPos, cpuVel.x, cpuVel.z);
@@ -1213,6 +1251,9 @@ const Hockey = (function(){
     poseFigure(cpuFigure, cpuPos.x, cpuPos.z, -1);
     puck.position.set(puckPos.x, 0.15*SCALE, puckPos.z);
     puckRim.position.set(puckPos.x, 0.16*SCALE, puckPos.z);
+    if(onlineMode && Network.publishState){
+      Network.publishState({x:playerPos.x,z:playerPos.z,score:youScore});
+    }
   }
   function render(){ renderer.render(scene, camera); }
   function onResize(){ camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix(); }
@@ -1694,18 +1735,28 @@ const Racing = (function(){
     player.wheels.forEach(w=>{ w.rotation.x -= spin; });
     rival.wheels.forEach(w=>{ w.rotation.x -= rdz/0.5; });
 
-    /* rival lateral weaving + obstacle dodging */
-    let threat = null;
-    for(const o of obstacles){
-      if(o.active && o.lane === 1 && o.z > -70 && o.z < -6 && (!threat || o.z < threat.z)) threat = o;
-    }
-    if(threat){
-      const side = threat.x > 0 ? -1 : 1;
-      rivalTargetX = Math.max(-lim, Math.min(lim, threat.x + side*5.2));
+    /* rival: remote player online, AI otherwise */
+    if(onlineMode){
+      const r = Object.values(Network.getRemoteStates ? Network.getRemoteStates() : {})[0];
+      if(r){
+        rivalX += ((r.x ?? rivalX) - rivalX) * Math.min(1, dt*14);
+        rivalKmh += ((r.speed ?? rivalKmh) - rivalKmh) * Math.min(1, dt*10);
+        distR = r.dist ?? distR;
+        rivalTargetX = r.x ?? rivalX;
+      }
     } else {
-      rivalTargetX = Math.sin(raceTime*0.7)*3.2;
+      let threat = null;
+      for(const o of obstacles){
+        if(o.active && o.lane === 1 && o.z > -70 && o.z < -6 && (!threat || o.z < threat.z)) threat = o;
+      }
+      if(threat){
+        const side = threat.x > 0 ? -1 : 1;
+        rivalTargetX = Math.max(-lim, Math.min(lim, threat.x + side*5.2));
+      } else {
+        rivalTargetX = Math.sin(raceTime*0.7)*3.2;
+      }
+      rivalX += Math.max(-STEER_SPEED*dt, Math.min(STEER_SPEED*dt, rivalTargetX - rivalX));
     }
-    rivalX += Math.max(-STEER_SPEED*dt, Math.min(STEER_SPEED*dt, rivalTargetX - rivalX));
     rival.group.position.set(R_OFF + rivalX, 0, 0);
     rival.group.rotation.z = -(rivalTargetX - rivalX)*0.05;
 
@@ -1812,6 +1863,9 @@ const Racing = (function(){
     const d = distP - distR;
     gapEl.textContent = Math.abs(d) < 8 ? 'neck & neck' : (d > 0 ? 'ahead by ' + Math.round(d*M_PER_UNIT) + ' m' : 'behind by ' + Math.round(-d*M_PER_UNIT) + ' m');
     hudTrack();
+    if(onlineMode && Network.publishState){
+      Network.publishState({x:carX,speed:kmh,dist:distP,finished});
+    }
 
   }
 
@@ -2225,10 +2279,12 @@ const FaceGate = (function(){
             avX *= 0.4;
           }
         } else {
-          /* rival clears most gates, but not all */
-          if(Math.random() < 0.74){ rivalScore++; w.m.material.color.setHex(0xff6fd8); }
-          else w.m.material.color.setHex(0x555b78);
-          drawRivalFace(w.ex.id);
+          if(!onlineMode){
+            /* CPU rival clears most gates, but not all */
+            if(Math.random() < 0.74){ rivalScore++; w.m.material.color.setHex(0xff6fd8); }
+            else w.m.material.color.setHex(0x555b78);
+            drawRivalFace(w.ex.id);
+          }
         }
         hud();
       }
@@ -2248,7 +2304,18 @@ const FaceGate = (function(){
     }
     /* first one to clear every gate wins */
     if(score >= TOTAL_GATES){ winner = 'you'; finish(); return; }
+    if(onlineMode){
+      const r = Object.values(Network.getRemoteStates ? Network.getRemoteStates() : {})[0];
+      if(r){
+        rivalScore = r.score ?? rivalScore;
+        rivalAv.position.x = RV_X + (r.x ?? 0);
+        rivalZ = r.z ?? rivalZ;
+      }
+    }
     if(rivalScore >= TOTAL_GATES){ winner = 'rival'; finish(); return; }
+    if(onlineMode && Network.publishState){
+      Network.publishState({score,x:avX,z:score,speed});
+    }
 
     /* camera: centred so both tunnels read, drifting with the player */
     if(shake > 0) shake = Math.max(0, shake - dt*1.8);
@@ -2557,15 +2624,26 @@ const Sword = (function(){
     pos.addScaledVector(vel, dt);
     walkT += dt * (1 + vel.length()*0.1);
 
-    /* ----- foe AI ----- */
+    /* ----- foe: remote player online, AI otherwise ----- */
     const toYou = new THREE.Vector3().subVectors(pos, fpos);
     const dist = toYou.length();
-    const dir = toYou.clone().normalize();
-    const want = dist > 10.5 ? 1 : dist < 6.8 ? -0.7 : 0.15;
-    const strafe = new THREE.Vector3(-dir.z, 0, dir.x).multiplyScalar(Math.sin(performance.now()/900)*0.8);
-    fvel.addScaledVector(dir.clone().multiplyScalar(want*34).add(strafe.multiplyScalar(18)), dt);
-    fvel.multiplyScalar(Math.pow(0.03, dt));
-    fpos.addScaledVector(fvel, dt);
+    const dir = toYou.lengthSq() > 0.0001 ? toYou.clone().normalize() : new THREE.Vector3(0,0,1);
+    if(onlineMode){
+      const r = Object.values(Network.getRemoteStates ? Network.getRemoteStates() : {})[0];
+      if(r){
+        fpos.x += ((r.x ?? fpos.x) - fpos.x) * Math.min(1, dt*18);
+        fpos.z += ((r.z ?? fpos.z) - fpos.z) * Math.min(1, dt*18);
+        fvel.x = r.vx ?? 0; fvel.z = r.vz ?? 0;
+        fangle = r.angle ?? fangle;
+        foeHp = r.hp ?? foeHp;
+      }
+    } else {
+      const want = dist > 10.5 ? 1 : dist < 6.8 ? -0.7 : 0.15;
+      const strafe = new THREE.Vector3(-dir.z, 0, dir.x).multiplyScalar(Math.sin(performance.now()/900)*0.8);
+      fvel.addScaledVector(dir.clone().multiplyScalar(want*34).add(strafe.multiplyScalar(18)), dt);
+      fvel.multiplyScalar(Math.pow(0.03, dt));
+      fpos.addScaledVector(fvel, dt);
+    }
     fwalkT += dt * (1 + fvel.length()*0.1);
 
     /* keep both inside the arena */
@@ -2595,19 +2673,20 @@ const Sword = (function(){
     you.pivot.rotation.y = angle;
     you.pivot.position.set(0, 2.6 + Math.sin(walkT*9)*0.1, 0);
 
-    /* ----- foe blade: winds up then swings through ----- */
-    fCool -= dt;
-    if(fCool <= 0 && dist < 11.5 && fSwing === 0){ fSwing = 1; fCool = 1.1 + Math.random()*0.9; }
-    const faim = Math.atan2(pos.x - fpos.x, pos.z - fpos.z);
-    if(fSwing > 0){
-      fSwing = Math.max(0, fSwing - dt*2.2);
-      const arc = (1 - fSwing) * 2.4 - 1.2;
-      fangle += (faim + arc - fangle) * Math.min(1, 18*dt);
-    } else if(tipSpeed > HARD_TIP*0.5 && dist < 13){
-      /* incoming hard swing — bring the blade up to meet it */
-      fangle += (faim - fangle) * Math.min(1, 12*dt);
-    } else {
-      fangle += (faim - 1.2 - fangle) * Math.min(1, 4*dt);
+    /* ----- foe blade ----- */
+    if(!onlineMode){
+      fCool -= dt;
+      if(fCool <= 0 && dist < 11.5 && fSwing === 0){ fSwing = 1; fCool = 1.1 + Math.random()*0.9; }
+      const faim = Math.atan2(pos.x - fpos.x, pos.z - fpos.z);
+      if(fSwing > 0){
+        fSwing = Math.max(0, fSwing - dt*2.2);
+        const arc = (1 - fSwing) * 2.4 - 1.2;
+        fangle += (faim + arc - fangle) * Math.min(1, 18*dt);
+      } else if(tipSpeed > HARD_TIP*0.5 && dist < 13){
+        fangle += (faim - fangle) * Math.min(1, 12*dt);
+      } else {
+        fangle += (faim - 1.2 - fangle) * Math.min(1, 4*dt);
+      }
     }
     foe.pivot.rotation.y = fangle;
 
@@ -2702,6 +2781,9 @@ const Sword = (function(){
     camera.lookAt(midX*0.6, 2.4, midZ*0.6);
 
     hud();
+    if(onlineMode && Network.publishState){
+      Network.publishState({x:pos.x,z:pos.z,vx:vel.x,vz:vel.z,angle,hp:youHp,tipSpeed,finished:over});
+    }
 
     if(foeHp <= 0 || youHp <= 0){
       over = true; running = false;
@@ -2970,7 +3052,7 @@ const Network = (function(){
     const data = snap.data();
     matchRef = db.collection('matches').doc(roomRef.id);
     const players = {};
-    (data.players||[]).forEach(p=>{ players[p.sessionId] = {name:p.name, score:0, status:'playing', finished:false}; });
+    (data.players||[]).forEach(p=>{ players[p.sessionId] = {name:p.name, score:0, status:'playing', finished:false, state:null}; });
     await matchRef.set({game:data.game, status:'playing', players, updatedAt: firebase.firestore.FieldValue.serverTimestamp()});
   }
 
@@ -2993,6 +3075,35 @@ const Network = (function(){
     await matchRef.update({['players.'+sessionId+'.score']: score, ['players.'+sessionId+'.status']: statusText, ['players.'+sessionId+'.finished']: true, updatedAt: firebase.firestore.FieldValue.serverTimestamp()});
   }
 
+  async function publishState(state){
+    if(!matchRef || !sessionId || !state) return;
+    pendingState = state;
+    const now = performance.now();
+    if(stateWriteBusy || now - lastStateWrite < 100) return;
+    stateWriteBusy = true;
+    lastStateWrite = now;
+    const send = pendingState; pendingState = null;
+    try {
+      await matchRef.update({
+        ['players.'+sessionId+'.state']: send,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    } catch(e) {}
+    stateWriteBusy = false;
+    if(pendingState && performance.now() - lastStateWrite >= 100) publishState(pendingState);
+  }
+
+  function setRemoteStates(players){
+    remoteStates = {};
+    Object.entries(players||{}).forEach(([id,p])=>{
+      if(id !== sessionId && p && p.state) remoteStates[id] = p.state;
+    });
+  }
+
+  function getRemoteStates(){
+    return remoteStates;
+  }
+
   async function leaveRoom(){
     if(roomUnsub){ roomUnsub(); roomUnsub = null; }
     if(matchUnsub){ matchUnsub(); matchUnsub = null; }
@@ -3007,13 +3118,13 @@ const Network = (function(){
         if(players.length===0){ await roomRef.delete(); }
         else { await roomRef.update({players, playerIds, host, hostName, status: data.status==='playing' ? 'finished' : data.status}); }
       }
-      roomRef = null; matchRef = null;
+      roomRef = null; matchRef = null; remoteStates = {};
     }
   }
 
   return {
     init, configured:()=>configured, ensureIdentity, startPresence, stopPresence, countOnline,
-    createRoom, joinRoom, quickMatch, subscribeRoom, startMatch, attachMatch, subscribeMatch, reportScore, leaveRoom,
+    createRoom, joinRoom, quickMatch, subscribeRoom, startMatch, attachMatch, subscribeMatch, reportScore, publishState, setRemoteStates, getRemoteStates, leaveRoom,
     maxPlayers, onAuthChange, currentUser, signUp, signIn, signOut: signOutUser,
     get sessionId(){return sessionId;}, get name(){return name;}, get roomCode(){return roomRef?roomRef.id:null;}
   };
@@ -3207,6 +3318,7 @@ function startOnlineMatch(code){
 function onMatchUpdate(data){
   if(!data || data.status !== 'playing') return;
   const players = data.players || {};
+  Network.setRemoteStates(players);
   const entries = Object.entries(players);
   const allFinished = entries.every(e=>e[1].finished);
   if(!allFinished) return;
